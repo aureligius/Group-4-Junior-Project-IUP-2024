@@ -1,9 +1,8 @@
 # Group-4-Junior-Project-IUP-2024
-
 ## Team Member
 1. Musa Hanif Moeljawan
 2. Aurellia Safa Madrim | 24/546878/TK/60781 
-3. Josh Jovancio
+3. Josh Jovancio | 24/536680/TK/59554
 
 ## Project Description
 CARBON-KICKERS is a gamified web application that transforms personal carbon footprint reduction into a competitive, engaging experience. Instead of just tracking emissions CARBON-KICKERS turns sustainibility into a sport. Users log their daily activities, such as transportation and destination choices to calculate their real-time carbon footprint. 
