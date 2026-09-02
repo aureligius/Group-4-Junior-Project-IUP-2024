@@ -1,6 +1,6 @@
 # Group-4-Junior-Project-IUP-2024
 ## Team Member
-1. Musa Hanif Moeljawan
+1. Musa Hanif Moeljawan | 24/533080/TK/59061
 2. Aurellia Safa Madrim | 24/546878/TK/60781 
 3. Josh Jovancio | 24/536680/TK/59554
 
