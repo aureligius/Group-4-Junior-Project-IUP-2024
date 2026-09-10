@@ -24,6 +24,11 @@ CARBON-KICKERS is a gamified web application that transforms personal carbon foo
 
 6. Impact Dashboard: Visualizes the user's historical data, showing exactly how much CO2 they have "kicked" out of the atmosphere over time
 
+
+## Class Diagram
+![alt text](ClassDiagram.png)
+
+
 ## Branch Naming
 
 `<type>/<short_description>.<name>`
