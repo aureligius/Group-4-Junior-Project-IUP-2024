@@ -10,4 +10,6 @@ public class League
     public DateTime EndDate { get; set; }
 
     public bool IsEligible(int xp) => xp >= MinXp && xp <= MaxXp;
+
+    public ICollection<LeagueParticipant> Participants { get; set; } = new List<LeagueParticipant>();
 }

@@ -9,4 +9,6 @@ public class Badge
     public string IconUrl { get; set; } = string.Empty;
 
     public bool IsEligible(int userXp) => userXp >= XpRequirement;
+
+    public ICollection<UserBadge> UserBadges { get; set; } = new List<UserBadge>();
 }

@@ -39,8 +39,14 @@ public class User
         }
     }
 
-    public void UpdateTier() 
-    { 
+    public void UpdateTier()
+    {
         // Tambahin Logic
     }
+    
+
+    public ICollection<TripLog> TripLogs { get; set; } = new List<TripLog>();
+    public ICollection<UserBadge> UserBadges { get; set; } = new List<UserBadge>();
+    public ICollection<LeagueParticipant> LeagueParticipants { get; set; } = new List<LeagueParticipant>();
+
 }

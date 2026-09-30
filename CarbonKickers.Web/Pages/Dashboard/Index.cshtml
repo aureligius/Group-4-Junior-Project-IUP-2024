@@ -1,0 +1,12 @@
+@page
+@model CarbonKickers.Web.Pages.IndexModel
+@{
+    Layout = "Shared/_Layout";
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="card">
+    <h2>@Model.Username's Dashboard</h2>
+    
+    <partial name="~/Modules/Beranda/_Hero.cshtml" />
+</div>

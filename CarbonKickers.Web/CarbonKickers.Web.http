@@ -1,0 +1,6 @@
+@CarbonKickers.Web_HostAddress = http://localhost:5028
+
+GET {{CarbonKickers.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
