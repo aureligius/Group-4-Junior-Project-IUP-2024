@@ -3,4 +3,5 @@
   <Project Path="CarbonKickers.Domain/CarbonKickers.Domain.csproj" />
   <Project Path="CarbonKickers.Infrastructure/CarbonKickers.Infrastructure.csproj" />
   <Project Path="CarbonKickers.Web/CarbonKickers.Web.csproj" />
+  <Project Path="CarbonKickers.Wpf/CarbonKickers.Wpf.csproj" />
 </Solution>

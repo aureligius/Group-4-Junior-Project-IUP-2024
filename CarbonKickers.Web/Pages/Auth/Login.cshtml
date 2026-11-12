@@ -1,0 +1,221 @@
+@page
+@model CarbonKickers.Web.Pages.Auth.LoginModel
+@{
+    Layout = null; // Bypasses _Layout.cshtml to preserve the custom Tailwind body gradient
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Kickers - Login & Register</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config for Custom Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'ck-light-peach': '#FEDBBD',
+                        'ck-peach': '#F7AB9B',
+                        'ck-grey-green': '#809493',
+                        'ck-sea-green': '#45726D',
+                        'ck-dark-green': '#094A44',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    .fade-out { animation: fadeOut 0.3s ease-in forwards; }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @@keyframes fadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-10px); }
+    }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-ck-dark-green to-ck-sea-green flex items-center justify-center p-4 font-sans text-gray-800">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative border border-ck-light-peach/30">
+        
+        <!-- Header -->
+        <div class="bg-ck-light-peach p-6 flex flex-col items-center justify-center border-b border-ck-peach/20">
+            <div class="bg-white p-3 rounded-full shadow-sm mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-ck-sea-green" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.5 2C15.215 2 12.93 2.766 11.025 4.195 9.012 2.656 6.34 2.222 4 3c-2.825.938-4.5 4.364-4 7.5.426 2.673 2.505 5.568 5.485 7.64L3.89 21.053l1.522 1.34 1.776-3.136c1.373.494 2.87.743 4.39.743 6.075 0 11-4.925 11-11V2h-5.078zM11.578 18c-1.127 0-2.223-.207-3.232-.605L9.61 14.28l-1.396-1.503-1.467 3.324C4.545 14.39 3.01 12.016 2.697 10c-.332-2.08 1-4.49 2.92-5.127 1.837-.61 3.96-.135 5.454 1.258l.685.642.753-.538c1.47-1.045 3.195-1.59 4.99-1.59H20v4.444c0 4.97-4.03 9-9 9z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-ck-dark-green tracking-tight">Carbon Kickers</h1>
+        </div>
+
+        <!-- Notification Box -->
+        <div id="notification-box" class="hidden absolute top-0 left-0 w-full bg-ck-peach text-white text-sm font-medium px-4 py-3 text-center z-10 shadow-md transition-all">
+            <span id="notification-message">Message goes here</span>
+            <button onclick="hideNotification()" class="absolute right-3 top-3 text-white hover:text-ck-dark-green">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <!-- Login View -->
+        <div id="login-view" class="p-8 pb-10">
+            <div class="mb-6 text-center">
+                <h2 class="text-xl font-semibold text-ck-dark-green mb-1">Welcome Back!</h2>
+                <p class="text-sm text-ck-grey-green">Log in to track your green trips.</p>
+            </div>
+
+            <!-- Note: method="post" added for future ASP.NET backend wiring -->
+            <form id="login-form" method="post" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-ck-dark-green mb-1">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="eco@warrior.com" 
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ck-peach focus:border-ck-peach outline-none transition-all text-sm bg-gray-50 focus:bg-white text-ck-dark-green">
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="login-password" class="block text-sm font-medium text-ck-dark-green">Password</label>
+                        <a href="#" class="text-xs text-ck-sea-green hover:text-ck-peach font-medium transition-colors">Forgot?</a>
+                    </div>
+                    <input type="password" id="login-password" required placeholder="••••••••" 
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ck-peach focus:border-ck-peach outline-none transition-all text-sm bg-gray-50 focus:bg-white text-ck-dark-green">
+                </div>
+                
+                <button type="submit" class="w-full bg-ck-sea-green hover:bg-ck-dark-green text-white font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 mt-2">
+                    Log In
+                </button>
+            </form>
+
+            <div class="mt-8 text-center text-sm text-ck-grey-green">
+                Don't have an account yet? 
+                <button type="button" onclick="toggleView('register')" class="text-ck-sea-green hover:text-ck-peach font-semibold transition-colors focus:outline-none">
+                    Sign up here
+                </button>
+            </div>
+        </div>
+
+        <!-- Registration View -->
+        <div id="register-view" class="hidden p-8 pb-10">
+            <div class="mb-6 text-center">
+                <h2 class="text-xl font-semibold text-ck-dark-green mb-1">Join the Movement</h2>
+                <p class="text-sm text-ck-grey-green">Create an account to start kicking carbon.</p>
+            </div>
+
+            <!-- Note: method="post" added for future ASP.NET backend wiring -->
+            <form id="register-form" method="post" onsubmit="handleRegister(event)" class="space-y-4">
+                <div>
+                    <label for="reg-username" class="block text-sm font-medium text-ck-dark-green mb-1">Username</label>
+                    <input type="text" id="reg-username" name="Username" required placeholder="EcoWarrior" 
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ck-peach focus:border-ck-peach outline-none transition-all text-sm bg-gray-50 focus:bg-white text-ck-dark-green">
+                </div>
+                <div>
+                    <label for="reg-email" class="block text-sm font-medium text-ck-dark-green mb-1">Email Address</label>
+                    <input type="email" id="reg-email" name="Email" required placeholder="eco@warrior.com" 
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ck-peach focus:border-ck-peach outline-none transition-all text-sm bg-gray-50 focus:bg-white text-ck-dark-green">
+                </div>
+                <div>
+                    <label for="reg-password" class="block text-sm font-medium text-ck-dark-green mb-1">Password</label>
+                    <input type="password" id="reg-password" name="Password" required placeholder="Create a strong password" 
+                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ck-peach focus:border-ck-peach outline-none transition-all text-sm bg-gray-50 focus:bg-white text-ck-dark-green">
+                </div>
+                
+                <button type="submit" class="w-full bg-ck-peach hover:bg-orange-400 text-white font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 mt-4">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm text-ck-grey-green">
+                Already have an account? 
+                <button type="button" onclick="toggleView('login')" class="text-ck-sea-green hover:text-ck-peach font-semibold transition-colors focus:outline-none">
+                    Log in
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginView = document.getElementById('login-view');
+        const registerView = document.getElementById('register-view');
+        const notificationBox = document.getElementById('notification-box');
+        const notificationMessage = document.getElementById('notification-message');
+
+        function toggleView(viewName) {
+            hideNotification();
+            
+            if (viewName === 'register') {
+                loginView.classList.remove('fade-in');
+                loginView.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    loginView.classList.add('hidden');
+                    registerView.classList.remove('hidden', 'fade-out');
+                    registerView.classList.add('fade-in');
+                }, 300);
+            } else {
+                registerView.classList.remove('fade-in');
+                registerView.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    registerView.classList.add('hidden');
+                    loginView.classList.remove('hidden', 'fade-out');
+                    loginView.classList.add('fade-in');
+                }, 300);
+            }
+        }
+
+        function showNotification(message, isError = false) {
+            notificationMessage.textContent = message;
+            notificationBox.classList.remove('hidden');
+            
+            if(isError) {
+                notificationBox.classList.remove('bg-ck-sea-green');
+                notificationBox.classList.add('bg-ck-peach');
+            } else {
+                notificationBox.classList.remove('bg-ck-peach');
+                notificationBox.classList.add('bg-ck-sea-green');
+            }
+            setTimeout(hideNotification, 4000);
+        }
+
+        function hideNotification() {
+            notificationBox.classList.add('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            // Note: Once you implement C# backend auth, remove 'e.preventDefault()' so it posts to the server
+            showNotification('Login successful! Redirecting...', false);
+            setTimeout(() => {
+                window.location.href = '/Dashboard'; // Routes to the existing dashboard folder
+            }, 1500);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            showNotification('Account created successfully! Please log in.', false);
+            setTimeout(() => {
+                document.getElementById('register-form').reset();
+                toggleView('login');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
