@@ -1,6 +1,7 @@
 using CarbonKickers.Application.Users;
 using CarbonKickers.Domain.Entities;
 using CarbonKickers.Infrastructure.Data;
+using CarbonKickers.Shared.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -73,7 +74,7 @@ public sealed class UserAuthService : IUserAuthService
         return new(
             true,
             null,
-            new AuthenticatedUser(user.Id, user.Username, user.Email, user.Role));
+            new AuthenticatedUser(user.Id, user.Username, user.Email, user.Role.ToString()));
     }
 
     public async Task<AuthOperationResult> ValidateCredentialsAsync(LoginRequest request)
@@ -106,6 +107,6 @@ public sealed class UserAuthService : IUserAuthService
         return new(
             true,
             null,
-            new AuthenticatedUser(user.Id, user.Username, user.Email, user.Role));
+            new AuthenticatedUser(user.Id, user.Username, user.Email, user.Role.ToString()));
     }
 }

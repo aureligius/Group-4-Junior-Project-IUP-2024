@@ -1,11 +1,12 @@
-using Microsoft.EntityFrameworkCore;
 using CarbonKickers.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarbonKickers.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options) { }
 
     public DbSet<User> Users => Set<User>();
     public DbSet<TripLog> TripLogs => Set<TripLog>();
@@ -29,25 +30,42 @@ public class AppDbContext : DbContext
             entity.Property(u => u.Role).HasConversion<string>();
         });
 
+        // Configure Transport-mode
+        modelBuilder.Entity<TransportMode>(entity =>
+        {
+            entity.HasKey(mode => mode.Id);
+
+            entity.Property(mode => mode.ModeName).HasMaxLength(50).IsRequired();
+
+            entity.HasIndex(mode => mode.ModeName).IsUnique();
+        });
+
         // Configure TripLog (Relationships with Mode and BaselineMode)
         modelBuilder.Entity<TripLog>(entity =>
         {
             entity.HasKey(t => t.Id);
 
-            entity.HasOne<User>()
-                  .WithMany(u => u.TripLogs)
-                  .HasForeignKey(t => t.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne<User>()
+                .WithMany(u => u.TripLogs)
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(t => t.TransportMode)
-                  .WithMany()
-                  .HasForeignKey(t => t.TransportModeId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(t => t.TransportMode)
+                .WithMany()
+                .HasForeignKey(t => t.TransportModeId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(t => t.BaselineTransportMode)
-                  .WithMany()
-                  .HasForeignKey(t => t.BaselineTransportModeId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne(t => t.BaselineTransportMode)
+                .WithMany()
+                .HasForeignKey(t => t.BaselineTransportModeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(t => t.OriginPlaceId).HasMaxLength(255);
+
+            entity.Property(t => t.DestinationPlaceId).HasMaxLength(255);
         });
 
         // Configure Challenge (Challenger and Opponent relations)
@@ -56,15 +74,17 @@ public class AppDbContext : DbContext
             entity.HasKey(c => c.Id);
             entity.Property(c => c.Status).HasConversion<string>();
 
-            entity.HasOne<User>()
-                  .WithMany()
-                  .HasForeignKey(c => c.ChallengerId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(c => c.ChallengerId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne<User>()
-                  .WithMany()
-                  .HasForeignKey(c => c.OpponentId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(c => c.OpponentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Configure UserBadge (Unique user per badge)
@@ -73,15 +93,17 @@ public class AppDbContext : DbContext
             entity.HasKey(ub => ub.Id);
             entity.HasIndex(ub => new { ub.UserId, ub.BadgeId }).IsUnique();
 
-            entity.HasOne<User>()
-                  .WithMany(u => u.UserBadges)
-                  .HasForeignKey(ub => ub.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne<User>()
+                .WithMany(u => u.UserBadges)
+                .HasForeignKey(ub => ub.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne<Badge>()
-                  .WithMany(b => b.UserBadges)
-                  .HasForeignKey(ub => ub.BadgeId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne<Badge>()
+                .WithMany(b => b.UserBadges)
+                .HasForeignKey(ub => ub.BadgeId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure LeagueParticipant
@@ -90,15 +112,17 @@ public class AppDbContext : DbContext
             entity.HasKey(lp => lp.Id);
             entity.HasIndex(lp => new { lp.UserId, lp.LeagueId }).IsUnique();
 
-            entity.HasOne<League>()
-                  .WithMany(l => l.Participants)
-                  .HasForeignKey(lp => lp.LeagueId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne<League>()
+                .WithMany(l => l.Participants)
+                .HasForeignKey(lp => lp.LeagueId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne<User>()
-                  .WithMany(u => u.LeagueParticipants)
-                  .HasForeignKey(lp => lp.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne<User>()
+                .WithMany(u => u.LeagueParticipants)
+                .HasForeignKey(lp => lp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

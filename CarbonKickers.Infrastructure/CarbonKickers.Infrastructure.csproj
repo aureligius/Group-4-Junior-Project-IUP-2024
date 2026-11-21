@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CarbonKickers.Domain\CarbonKickers.Domain.csproj" />
     <ProjectReference Include="..\CarbonKickers.Application\CarbonKickers.Application.csproj" />
+    <ProjectReference Include="..\CarbonKickers.Shared\CarbonKickers.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

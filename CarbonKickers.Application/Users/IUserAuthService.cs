@@ -1,3 +1,5 @@
+using CarbonKickers.Shared.Contracts;
+
 namespace CarbonKickers.Application.Users;
 
 public interface IUserAuthService

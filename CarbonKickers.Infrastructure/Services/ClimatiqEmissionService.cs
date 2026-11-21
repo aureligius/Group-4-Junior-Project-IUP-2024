@@ -1,13 +1,12 @@
+using CarbonKickers.Domain.Entities;
+
 namespace CarbonKickers.Infrastructure.Services;
 
-using CarbonKickers.Domain.Entities;
-using CarbonKickers.Domain.Interfaces;
-
-public class ClimatiqEmissionService : IEmissionService
+public sealed class ClimatiqEmissionService : EmissionServiceBase
 {
-    public double GetEmissionFactor(TransportMode mode) => mode.EmissionFactorPerKm;
-
-    public double CalculateEmissions(double distanceKm, double emissionFactor)
+    protected override double CalculateEmissionsCore(
+        double distanceKm,
+        double emissionFactor)
     {
         return distanceKm * emissionFactor;
     }

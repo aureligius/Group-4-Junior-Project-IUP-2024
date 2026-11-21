@@ -1,12 +1,10 @@
-//Buat Testing
-
 using CarbonKickers.Infrastructure.Data;
-using CarbonKickers.Domain.Entities;
+using CarbonKickers.Shared.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarbonKickers.Infrastructure.Services;
 
-public class TransportService
+public sealed class TransportService
 {
     private readonly AppDbContext _context;
 
@@ -15,24 +13,16 @@ public class TransportService
         _context = context;
     }
 
-    // Add New Record
-    public async Task<TransportMode> AddTransportModeAsync(string name, double emissionFactor)
+    public async Task<IReadOnlyList<TransportModeResponse>> GetAllModesAsync()
     {
-        var newMode = new TransportMode
-        {
-            ModeName = name,
-            EmissionFactorPerKm = emissionFactor
-        };
-
-        _context.TransportModes.Add(newMode);
-        await _context.SaveChangesAsync(); // Pushes the INSERT to Neon
-        
-        return newMode;
-    }
-
-    // Fect All Record
-    public async Task<List<TransportMode>> GetAllModesAsync()
-    {
-        return await _context.TransportModes.ToListAsync();
+        return await _context
+            .TransportModes.AsNoTracking()
+            .OrderBy(mode => mode.ModeName)
+            .Select(mode => new TransportModeResponse(
+                mode.Id,
+                mode.ModeName,
+                mode.EmissionFactorPerKm
+            ))
+            .ToListAsync();
     }
 }
