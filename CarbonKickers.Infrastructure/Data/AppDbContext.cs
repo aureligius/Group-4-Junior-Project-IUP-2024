@@ -66,6 +66,10 @@ public class AppDbContext : DbContext
             entity.Property(t => t.OriginPlaceId).HasMaxLength(255);
 
             entity.Property(t => t.DestinationPlaceId).HasMaxLength(255);
+
+            entity.Property(t => t.ActualRouteMode).HasMaxLength(30).IsRequired();
+
+            entity.Property(t => t.BaselineRouteMode).HasMaxLength(30).IsRequired();
         });
 
         // Configure Challenge (Challenger and Opponent relations)

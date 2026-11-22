@@ -14,11 +14,10 @@ public sealed class TripHistoryService : ITripHistoryService
         _db = db;
     }
 
-    public async Task<IReadOnlyList<TripHistoryResponse>> GetForUserAsync(
-        Guid userId)
+    public async Task<IReadOnlyList<TripHistoryResponse>> GetForUserAsync(Guid userId)
     {
-        return await _db.TripLogs
-            .AsNoTracking()
+        return await _db
+            .TripLogs.AsNoTracking()
             .Where(trip => trip.UserId == userId)
             .OrderByDescending(trip => trip.LoggedAt)
             .Select(trip => new TripHistoryResponse(
@@ -28,10 +27,17 @@ public sealed class TripHistoryService : ITripHistoryService
                 trip.TransportMode.ModeName,
                 trip.BaselineTransportMode.ModeName,
                 trip.DistanceKm,
+                trip.BaselineDistanceKm,
+                trip.ActualRouteMode,
+                trip.ActualDistanceIsEstimated,
+                trip.BaselineRouteMode,
+                trip.BaselineDistanceIsEstimated,
                 trip.Co2EmittedKg,
+                trip.BaselineCo2EmittedKg,
                 trip.Co2SavedKg,
                 (int)Math.Floor(trip.Co2SavedKg * 10),
-                trip.LoggedAt))
+                trip.LoggedAt
+            ))
             .ToListAsync();
     }
 }

@@ -1,19 +1,16 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Windows;
+﻿using System.Windows;
+using System.Net.Http;
+using CarbonKickers.Client.Services;
 using CarbonKickers.Shared.Contracts;
+using CarbonKickers.Client.Views.Dashboard;
 
-namespace CarbonKickers.Client;
+namespace CarbonKickers.Client.Views.Authentication;
 
-public partial class MainWindow : Window
+public partial class LoginWindow : Window
 {
-    private readonly HttpClient _httpClient = new()
-    {
-        BaseAddress = new Uri("https://localhost:7211/")
-    };
+    private readonly ApiClient _apiClient = new();
 
-    public MainWindow()
+    public LoginWindow()
     {
         InitializeComponent();
     }
@@ -34,8 +31,10 @@ public partial class MainWindow : Window
     {
         LoginErrorText.Visibility = Visibility.Collapsed;
 
-        if (string.IsNullOrWhiteSpace(LoginEmailTextBox.Text) ||
-            string.IsNullOrWhiteSpace(LoginPasswordBox.Password))
+        if (
+            string.IsNullOrWhiteSpace(LoginEmailTextBox.Text)
+            || string.IsNullOrWhiteSpace(LoginPasswordBox.Password)
+        )
         {
             ShowLoginError("Email and password are required.");
             return;
@@ -45,42 +44,25 @@ public partial class MainWindow : Window
         {
             var request = new LoginRequest(
                 LoginEmailTextBox.Text.Trim(),
-                LoginPasswordBox.Password);
+                LoginPasswordBox.Password
+            );
 
-            var response = await _httpClient.PostAsJsonAsync(
-                "api/auth/login",
-                request);
+            var result = await _apiClient.LoginAsync(request);
 
-            if (!response.IsSuccessStatusCode)
+            if (result is null)
             {
                 ShowLoginError("Invalid email or password.");
                 return;
             }
 
-            var result = await response.Content
-                .ReadFromJsonAsync<LoginResponse>();
+            var dashboardWindow = new DashboardWindow(_apiClient);
+            dashboardWindow.Show();
 
-            if (result is null || string.IsNullOrWhiteSpace(result.Token))
-            {
-                ShowLoginError("The API returned an invalid login response.");
-                return;
-            }
-
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", result.Token);
-
-            MessageBox.Show(
-                $"Welcome back, {result.Username}!",
-                "Carbon Kickers",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            // Open DashboardWindow here after you create it.
+            Close();
         }
         catch (HttpRequestException)
         {
-            ShowLoginError(
-                "Cannot reach the API. Start CarbonKickers.Api first.");
+            ShowLoginError("Cannot reach the API. Start CarbonKickers.Api first.");
         }
         catch (TaskCanceledException)
         {
@@ -92,9 +74,11 @@ public partial class MainWindow : Window
     {
         RegisterErrorText.Visibility = Visibility.Collapsed;
 
-        if (string.IsNullOrWhiteSpace(RegisterUsernameTextBox.Text) ||
-            string.IsNullOrWhiteSpace(RegisterEmailTextBox.Text) ||
-            string.IsNullOrWhiteSpace(RegisterPasswordBox.Password))
+        if (
+            string.IsNullOrWhiteSpace(RegisterUsernameTextBox.Text)
+            || string.IsNullOrWhiteSpace(RegisterEmailTextBox.Text)
+            || string.IsNullOrWhiteSpace(RegisterPasswordBox.Password)
+        )
         {
             ShowRegisterError("All fields are required.");
             return;
@@ -105,16 +89,16 @@ public partial class MainWindow : Window
             var request = new RegisterRequest(
                 RegisterUsernameTextBox.Text.Trim(),
                 RegisterEmailTextBox.Text.Trim(),
-                RegisterPasswordBox.Password);
+                RegisterPasswordBox.Password
+            );
 
-            var response = await _httpClient.PostAsJsonAsync(
-                "api/auth/register",
-                request);
+            var succeeded = await _apiClient.RegisterAsync(request);
 
-            if (!response.IsSuccessStatusCode)
+            if (!succeeded)
             {
                 ShowRegisterError(
-                    "Registration failed. Email or username may already be registered.");
+                    "Registration failed. Email or username may already be registered."
+                );
                 return;
             }
 
@@ -122,7 +106,8 @@ public partial class MainWindow : Window
                 "Account created. You can now log in.",
                 "Carbon Kickers",
                 MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBoxImage.Information
+            );
 
             RegisterUsernameTextBox.Clear();
             RegisterEmailTextBox.Clear();
@@ -132,8 +117,7 @@ public partial class MainWindow : Window
         }
         catch (HttpRequestException)
         {
-            ShowRegisterError(
-                "Cannot reach the API. Start CarbonKickers.Api first.");
+            ShowRegisterError("Cannot reach the API. Start CarbonKickers.Api first.");
         }
         catch (TaskCanceledException)
         {

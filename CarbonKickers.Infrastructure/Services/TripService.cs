@@ -31,10 +31,16 @@ public sealed class TripService : ITripService
         var baselineMode = await _db.TransportModes.FindAsync(request.BaselineTransportModeId)
             ?? throw new KeyNotFoundException("Baseline transport mode was not found.");
 
-        var distanceKm = await _mapsService.CalculateDistanceAsync(
+        var actualRoute = await _mapsService.CalculateDistanceAsync(
             request.OriginPlaceId.Trim(),
             request.DestinationPlaceId.Trim(),
             transportMode.ModeName
+        );
+
+        var baselineRoute = await _mapsService.CalculateDistanceAsync(
+            request.OriginPlaceId.Trim(),
+            request.DestinationPlaceId.Trim(),
+            baselineMode.ModeName
         );
 
         var trip = new TripLog
@@ -44,7 +50,12 @@ public sealed class TripService : ITripService
             OriginPlaceId = request.OriginPlaceId.Trim(),
             Destination = request.Destination.Trim(),
             DestinationPlaceId = request.DestinationPlaceId.Trim(),
-            DistanceKm = distanceKm,
+            DistanceKm = actualRoute.DistanceKm,
+            BaselineDistanceKm = baselineRoute.DistanceKm,
+            ActualRouteMode = actualRoute.RouteModeUsed,
+            ActualDistanceIsEstimated = actualRoute.IsEstimated,
+            BaselineRouteMode = baselineRoute.RouteModeUsed,
+            BaselineDistanceIsEstimated = baselineRoute.IsEstimated,
             TransportModeId = transportMode.Id,
             TransportMode = transportMode,
             BaselineTransportModeId = baselineMode.Id,
@@ -66,9 +77,15 @@ public sealed class TripService : ITripService
             trip.Origin,
             trip.Destination,
             trip.DistanceKm,
+            trip.BaselineDistanceKm,
+            trip.ActualRouteMode,
+            trip.ActualDistanceIsEstimated,
+            trip.BaselineRouteMode,
+            trip.BaselineDistanceIsEstimated,
             transportMode.ModeName,
             baselineMode.ModeName,
             trip.Co2EmittedKg,
+            trip.BaselineCo2EmittedKg,
             trip.Co2SavedKg,
             xpEarned,
             trip.LoggedAt

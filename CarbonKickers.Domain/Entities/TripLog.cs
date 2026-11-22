@@ -12,6 +12,14 @@ public class TripLog
     public string? DestinationPlaceId { get; set; }
     public double DistanceKm { get; set; }
 
+    public double BaselineDistanceKm { get; set; }
+
+    public string ActualRouteMode { get; set; } = "DRIVE";
+    public bool ActualDistanceIsEstimated { get; set; }
+
+    public string BaselineRouteMode { get; set; } = "DRIVE";
+    public bool BaselineDistanceIsEstimated { get; set; }
+
     public int TransportModeId { get; set; }
     public TransportMode TransportMode { get; set; } = null!;
 
@@ -19,17 +27,23 @@ public class TripLog
     public TransportMode BaselineTransportMode { get; set; } = null!;
 
     public double Co2EmittedKg { get; private set; }
+    public double BaselineCo2EmittedKg { get; private set; }
     public double Co2SavedKg { get; private set; }
     public DateTime LoggedAt { get; set; } = DateTime.UtcNow;
 
     public void CalculateSavings(IEmissionService emissionService)
     {
-        double actualFactor = emissionService.GetEmissionFactor(TransportMode);
+        var actualFactor = emissionService.GetEmissionFactor(TransportMode);
+
         Co2EmittedKg = emissionService.CalculateEmissions(DistanceKm, actualFactor);
 
-        double baselineFactor = emissionService.GetEmissionFactor(BaselineTransportMode);
-        double baselineEmissions = emissionService.CalculateEmissions(DistanceKm, baselineFactor);
+        var baselineFactor = emissionService.GetEmissionFactor(BaselineTransportMode);
 
-        Co2SavedKg = Math.Max(0, baselineEmissions - Co2EmittedKg);
+        BaselineCo2EmittedKg = emissionService.CalculateEmissions(
+            BaselineDistanceKm,
+            baselineFactor
+        );
+
+        Co2SavedKg = Math.Max(0, BaselineCo2EmittedKg - Co2EmittedKg);
     }
 }
