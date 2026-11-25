@@ -1,0 +1,54 @@
+<UserControl x:Class="CarbonKickers.Client.Views.Badges.BadgesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="36,32,36,36">
+            <TextBlock Text="BADGES" Style="{StaticResource Text.ScreenTitle}"/>
+            <TextBlock x:Name="SummaryText" Text="Your unlocked Carbon Kickers achievements."
+                       Style="{StaticResource Text.Subtitle}"/>
+
+            <ItemsControl x:Name="BadgesItems" Margin="-8,20,-8,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="3"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl Style="{StaticResource ArcadePanel}" Margin="8" Padding="20">
+                            <StackPanel>
+                                <Image Source="{StaticResource Sprite.Medal}" Width="56" Height="56" HorizontalAlignment="Left"
+                                       RenderOptions.EdgeMode="Aliased"/>
+                                <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Margin="0,16,0,0"
+                                           Foreground="{StaticResource Brush.GameText}" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Description}" Style="{StaticResource Text.GameMuted}" Margin="0,6,0,0"/>
+                                <TextBlock Text="{Binding UnlockedAt, StringFormat='UNLOCKED {0:d MMM yyyy}'}"
+                                           Style="{StaticResource Text.Pixel}" FontSize="8" Margin="0,16,0,0"
+                                           Foreground="{StaticResource Brush.Gold}"/>
+                                <TextBlock Text="{Binding XpRequirement, StringFormat='Earned at {0:N0} Green XP'}" Margin="0,6,0,0"
+                                           FontSize="12" Foreground="{StaticResource Brush.GameMuted}"/>
+                            </StackPanel>
+                        </ContentControl>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ContentControl x:Name="EmptyText" Style="{StaticResource ArcadePanel}" Margin="0,20,0,0" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{StaticResource Sprite.Trophy}" Width="56" Height="52" VerticalAlignment="Top"
+                           RenderOptions.EdgeMode="Aliased"/>
+                    <StackPanel Margin="20,0,0,0" MaxWidth="520">
+                        <TextBlock Text="NO BADGES YET" Style="{StaticResource Text.GameHeading}"/>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Margin="0,12,0,16" FontSize="14"
+                                   Text="Badges unlock as your Green XP grows. Log a greener trip than usual to earn your first one."/>
+                        <Button Content="LOG A TRIP" Style="{StaticResource Button.Game}" HorizontalAlignment="Left"
+                                Click="LogTripButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </ContentControl>
+
+            <TextBlock x:Name="ErrorText" Style="{StaticResource Text.Error}" Margin="0,20,0,0" Visibility="Collapsed"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,30 +1,34 @@
 using System.Net.Http;
 using System.Windows;
-using CarbonKickers.Client.Services;
+using System.Windows.Controls;
+using CarbonKickers.Client.Views.Shell;
 
 namespace CarbonKickers.Client.Views.Badges;
 
-public partial class MyBadgesWindow : Window
+public partial class BadgesView : UserControl
 {
-    private readonly ApiClient _apiClient;
+    private readonly IShell _shell;
 
-    public MyBadgesWindow(ApiClient apiClient)
+    public BadgesView(IShell shell)
     {
-        _apiClient = apiClient;
+        _shell = shell;
 
         InitializeComponent();
 
-        Loaded += MyBadgesWindow_Loaded;
+        Loaded += BadgesView_Loaded;
     }
 
-    private async void MyBadgesWindow_Loaded(object sender, RoutedEventArgs e)
+    private async void BadgesView_Loaded(object sender, RoutedEventArgs e)
     {
         try
         {
-            var badges = await _apiClient.GetBadgesAsync();
+            var badges = await _shell.Api.GetBadgesAsync();
 
             BadgesItems.ItemsSource = badges;
             EmptyText.Visibility = badges.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            SummaryText.Text = badges.Count == 0
+                ? "Your unlocked Carbon Kickers achievements."
+                : $"{badges.Count} unlocked so far. Keep logging greener trips to earn more.";
         }
         catch (HttpRequestException)
         {
@@ -42,4 +46,6 @@ public partial class MyBadgesWindow : Window
         ErrorText.Text = message;
         ErrorText.Visibility = Visibility.Visible;
     }
+
+    private void LogTripButton_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.LogTrip);
 }
