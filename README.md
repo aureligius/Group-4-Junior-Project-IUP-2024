@@ -8,7 +8,7 @@
 
 ## Project Description
 
-CARBON-KICKERS is a gamified web application that transforms personal carbon footprint reduction into a competitive, engaging experience. Instead of just tracking emissions CARBON-KICKERS turns sustainibility into a sport. Users log their daily activities, such as transportation and destination choices to calculate their real-time carbon footprint.
+CARBON-KICKERS is a gamified native Windows desktop application that transforms personal carbon footprint reduction into a competitive, engaging experience. Instead of just tracking emissions, CARBON-KICKERS turns sustainability into a sport. Users log daily transportation and destination choices to calculate their real-time carbon footprint.
 
 ## Core Features
 
@@ -49,17 +49,11 @@ CARBON-KICKERS is a gamified web application that transforms personal carbon foo
 ## Structure
 ```text
 CarbonKickers/
-│
-├── CarbonKickers.sln
-│
-├── CarbonKickers.Web/        (Buat Frontend)
-│   └── Blazor frontend       (Blazor??)
-│
-├── CarbonKickers.Application/
-│   └── Business logic and application services
-│
-├── CarbonKickers.Domain/
-│   └── Entities and domain rules 
-│
-└── CarbonKickers.Infrastructure/
-    └── Database and external infrastructure
+├── CarbonKickers.slnx
+├── CarbonKickers.Client/          # WPF desktop client (MVVM)
+├── CarbonKickers.Api/             # ASP.NET Core Web API
+├── CarbonKickers.Application/     # Business logic and application services
+├── CarbonKickers.Domain/          # Entities and domain rules
+├── CarbonKickers.Infrastructure/  # Database and external infrastructure
+├── CarbonKickers.Shared/          # DTOs and API request/response contracts
+└── tests/                         # Unit and integration tests

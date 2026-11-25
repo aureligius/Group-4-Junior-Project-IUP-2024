@@ -1,6 +1,11 @@
+using CarbonKickers.Domain.Models;
+
 namespace CarbonKickers.Domain.Interfaces;
 
 public interface IMapsService
 {
-    Task<double> CalculateDistanceAsync(string origin, string destination);
+    Task<RouteDistanceResult> CalculateDistanceAsync(
+        string originPlaceId,
+        string destinationPlaceId,
+        string requestedTransportModeName);
 }

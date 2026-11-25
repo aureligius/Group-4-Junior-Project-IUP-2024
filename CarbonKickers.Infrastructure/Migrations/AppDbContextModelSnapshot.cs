@@ -163,9 +163,13 @@ namespace CarbonKickers.Infrastructure.Migrations
 
                     b.Property<string>("ModeName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ModeName")
+                        .IsUnique();
 
                     b.ToTable("TransportModes");
                 });
@@ -175,6 +179,28 @@ namespace CarbonKickers.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("ActualDistanceIsEstimated")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ActualRouteMode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<double>("BaselineCo2EmittedKg")
+                        .HasColumnType("double precision");
+
+                    b.Property<bool>("BaselineDistanceIsEstimated")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("BaselineDistanceKm")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("BaselineRouteMode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<int>("BaselineTransportModeId")
                         .HasColumnType("integer");
@@ -189,6 +215,10 @@ namespace CarbonKickers.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("DestinationPlaceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<double>("DistanceKm")
                         .HasColumnType("double precision");
 
@@ -198,6 +228,10 @@ namespace CarbonKickers.Infrastructure.Migrations
                     b.Property<string>("Origin")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("OriginPlaceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<int>("TransportModeId")
                         .HasColumnType("integer");
