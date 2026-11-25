@@ -1,5 +1,4 @@
 using CarbonKickers.Application.Admin;
-using CarbonKickers.Application.Leagues;
 using CarbonKickers.Domain.Entities;
 using CarbonKickers.Domain.Enums;
 using CarbonKickers.Infrastructure.Data;
@@ -55,7 +54,12 @@ public sealed class AdminService : IAdminService
         var weekStartUtc = now.Date.AddDays(-daysSinceMonday);
         var weekEndUtc = weekStartUtc.AddDays(7);
 
-        var definitions = LeagueTierCatalog.All;
+        var definitions = await _db
+            .LeagueTierRules.Where(rule => rule.IsActive)
+            .OrderBy(rule => rule.MinXp)
+            .ToListAsync();
+
+        ValidateLeagueTierRules(definitions);
 
         foreach (var definition in definitions)
         {
@@ -99,6 +103,83 @@ public sealed class AdminService : IAdminService
             .ToListAsync();
 
         return new CreateWeeklyLeaguesResponse(weekStartUtc, weekEndUtc, leagues);
+    }
+
+    public async Task<IReadOnlyList<LeagueTierRuleAdminResponse>> GetLeagueTierRulesAsync()
+    {
+        return await _db
+            .LeagueTierRules.AsNoTracking()
+            .OrderBy(rule => rule.MinXp)
+            .Select(rule => new LeagueTierRuleAdminResponse(
+                rule.Id,
+                rule.TierName,
+                rule.MinXp,
+                rule.MaxXp,
+                rule.IsActive
+            ))
+            .ToListAsync();
+    }
+
+    public async Task<LeagueTierRuleAdminResponse> CreateLeagueTierRuleAsync(
+        SaveLeagueTierRuleRequest request
+    )
+    {
+        ValidateRuleValues(request);
+
+        var name = request.TierName.Trim();
+
+        var exists = await _db.LeagueTierRules.AnyAsync(rule =>
+            rule.TierName.ToLower() == name.ToLower()
+        );
+
+        if (exists)
+        {
+            throw new InvalidOperationException("A league tier with that name already exists.");
+        }
+
+        var rule = new LeagueTierRule
+        {
+            TierName = name,
+            MinXp = request.MinXp,
+            MaxXp = request.MaxXp,
+            IsActive = request.IsActive,
+        };
+
+        _db.LeagueTierRules.Add(rule);
+        await _db.SaveChangesAsync();
+
+        return ToLeagueTierRuleResponse(rule);
+    }
+
+    public async Task<LeagueTierRuleAdminResponse> UpdateLeagueTierRuleAsync(
+        int ruleId,
+        SaveLeagueTierRuleRequest request
+    )
+    {
+        ValidateRuleValues(request);
+
+        var rule = await _db.LeagueTierRules.FindAsync(ruleId)
+            ?? throw new KeyNotFoundException("League tier rule was not found.");
+
+        var name = request.TierName.Trim();
+
+        var usedByAnotherRule = await _db.LeagueTierRules.AnyAsync(item =>
+            item.Id != ruleId && item.TierName.ToLower() == name.ToLower()
+        );
+
+        if (usedByAnotherRule)
+        {
+            throw new InvalidOperationException("A league tier with that name already exists.");
+        }
+
+        rule.TierName = name;
+        rule.MinXp = request.MinXp;
+        rule.MaxXp = request.MaxXp;
+        rule.IsActive = request.IsActive;
+
+        await _db.SaveChangesAsync();
+
+        return ToLeagueTierRuleResponse(rule);
     }
 
     public async Task<IReadOnlyList<AdminBadgeResponse>> GetBadgesAsync()
@@ -259,5 +340,78 @@ public sealed class AdminService : IAdminService
         );
     }
 
-   
+    private static void ValidateRuleValues(SaveLeagueTierRuleRequest request)
+    {
+        if (request.MaxXp is not null && request.MaxXp < request.MinXp)
+        {
+            throw new InvalidOperationException(
+                "Maximum XP must be greater than or equal to minimum XP."
+            );
+        }
+    }
+
+    private static void ValidateLeagueTierRules(IReadOnlyList<LeagueTierRule> rules)
+    {
+        if (rules.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "At least one active league tier rule is required."
+            );
+        }
+
+        if (rules[0].MinXp != 0)
+        {
+            throw new InvalidOperationException("The first active tier must start at 0 XP.");
+        }
+
+        for (var index = 0; index < rules.Count; index++)
+        {
+            var rule = rules[index];
+
+            if (rule.MaxXp is not null && rule.MaxXp < rule.MinXp)
+            {
+                throw new InvalidOperationException(
+                    $"The {rule.TierName} tier has an invalid XP range."
+                );
+            }
+
+            var isLastRule = index == rules.Count - 1;
+
+            if (!isLastRule)
+            {
+                if (rule.MaxXp is null)
+                {
+                    throw new InvalidOperationException(
+                        "Only the final active tier can have no maximum XP."
+                    );
+                }
+
+                var nextRule = rules[index + 1];
+
+                if (nextRule.MinXp != rule.MaxXp.Value + 1)
+                {
+                    throw new InvalidOperationException(
+                        "Active tier ranges must be continuous, with no gaps or overlaps."
+                    );
+                }
+            }
+            else if (rule.MaxXp is not null)
+            {
+                throw new InvalidOperationException(
+                    "The final active tier must have no maximum XP."
+                );
+            }
+        }
+    }
+
+    private static LeagueTierRuleAdminResponse ToLeagueTierRuleResponse(LeagueTierRule rule)
+    {
+        return new LeagueTierRuleAdminResponse(
+            rule.Id,
+            rule.TierName,
+            rule.MinXp,
+            rule.MaxXp,
+            rule.IsActive
+        );
+    }
 }

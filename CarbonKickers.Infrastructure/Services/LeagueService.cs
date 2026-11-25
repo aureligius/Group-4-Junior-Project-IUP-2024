@@ -15,16 +15,37 @@ public sealed class LeagueService : ILeagueService
         _db = db;
     }
 
-    public IReadOnlyList<LeagueTierResponse> GetTiers()
-{
-    return LeagueTierCatalog.All
-        .Select(tier => new LeagueTierResponse(
-            tier.TierName,
-            tier.MinXp,
-            tier.MaxXp
-        ))
-        .ToList();
-}
+    public async Task<IReadOnlyList<LeagueTierResponse>> GetTiersAsync()
+    {
+        var now = DateTime.UtcNow;
+
+        // Current weekly leagues are a snapshot. Do not let rule edits
+        // change the tiers already being used this week.
+        var currentWeekLeagues = await _db
+            .Leagues.AsNoTracking()
+            .Where(league => league.StartDate <= now && league.EndDate > now)
+            .OrderBy(league => league.MinXp)
+            .ToListAsync();
+
+        if (currentWeekLeagues.Count > 0)
+        {
+            return currentWeekLeagues
+                .Select(league => new LeagueTierResponse(
+                    league.TierName,
+                    league.MinXp,
+                    league.MaxXp == int.MaxValue ? null : league.MaxXp
+                ))
+                .ToList();
+        }
+
+        // Before a week has been created, expose the editable future rules.
+        return await _db
+            .LeagueTierRules.AsNoTracking()
+            .Where(rule => rule.IsActive)
+            .OrderBy(rule => rule.MinXp)
+            .Select(rule => new LeagueTierResponse(rule.TierName, rule.MinXp, rule.MaxXp))
+            .ToListAsync();
+    }
 
     public async Task JoinEligibleCurrentLeagueAsync(User user)
     {

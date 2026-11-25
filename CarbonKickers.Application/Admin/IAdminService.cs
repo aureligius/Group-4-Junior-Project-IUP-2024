@@ -20,4 +20,13 @@ public interface IAdminService
         int transportModeId,
         SaveTransportModeRequest request
     );
+
+    Task<IReadOnlyList<LeagueTierRuleAdminResponse>> GetLeagueTierRulesAsync();
+
+    Task<LeagueTierRuleAdminResponse> CreateLeagueTierRuleAsync(SaveLeagueTierRuleRequest request);
+
+    Task<LeagueTierRuleAdminResponse> UpdateLeagueTierRuleAsync(
+        int ruleId,
+        SaveLeagueTierRuleRequest request
+    );
 }

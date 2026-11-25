@@ -70,3 +70,26 @@ public sealed record AdminTransportModeResponse(
     double EmissionFactorPerKm,
     bool IsActive
 );
+
+public sealed record LeagueTierRuleAdminResponse(
+    int Id,
+    string TierName,
+    int MinXp,
+    int? MaxXp,
+    bool IsActive
+);
+
+public sealed class SaveLeagueTierRuleRequest
+{
+    [Required]
+    [StringLength(50)]
+    public string TierName { get; init; } = string.Empty;
+
+    [Range(0, int.MaxValue)]
+    public int MinXp { get; init; }
+
+    [Range(0, int.MaxValue)]
+    public int? MaxXp { get; init; }
+
+    public bool IsActive { get; init; } = true;
+}

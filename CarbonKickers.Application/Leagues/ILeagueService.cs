@@ -9,5 +9,5 @@ public interface ILeagueService
 
     Task<CurrentLeagueResponse?> GetCurrentLeagueAsync(Guid userId);
 
-    IReadOnlyList<LeagueTierResponse> GetTiers();
+    Task<IReadOnlyList<LeagueTierResponse>> GetTiersAsync();
 }

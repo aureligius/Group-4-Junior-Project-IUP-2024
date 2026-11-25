@@ -1,12 +1,13 @@
 using System.Windows;
 using System.Windows.Controls;
 using CarbonKickers.Client.Services;
+using CarbonKickers.Client.Views.Admin;
 using CarbonKickers.Client.Views.Arena;
 using CarbonKickers.Client.Views.Authentication;
 using CarbonKickers.Client.Views.Badges;
 using CarbonKickers.Client.Views.Dashboard;
-using CarbonKickers.Client.Views.League;
 using CarbonKickers.Client.Views.Leaderboard;
+using CarbonKickers.Client.Views.League;
 using CarbonKickers.Client.Views.Trips;
 using CarbonKickers.Shared.Contracts;
 
@@ -16,12 +17,17 @@ namespace CarbonKickers.Client.Views.Shell;
 public partial class MainWindow : Window, IShell
 {
     private bool _isSyncingNav;
+    private readonly bool _isAdmin;
 
-    public MainWindow(ApiClient apiClient)
+    public MainWindow(ApiClient apiClient, LoginResponse loginResponse)
     {
         Api = apiClient;
 
+        _isAdmin = string.Equals(loginResponse.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+
         InitializeComponent();
+
+        AdminNavSection.Visibility = _isAdmin ? Visibility.Visible : Visibility.Collapsed;
 
         Loaded += (_, _) => Navigate(Screen.Dashboard);
     }
@@ -41,6 +47,7 @@ public partial class MainWindow : Window, IShell
             Screen.Leaderboard => new LeaderboardView(this),
             Screen.League => new LeagueView(this),
             Screen.Arena => new ArenaView(this),
+            Screen.Admin when _isAdmin => new AdminView(this),
             _ => throw new ArgumentOutOfRangeException(nameof(screen)),
         };
 
@@ -80,6 +87,7 @@ public partial class MainWindow : Window, IShell
             Screen.Badges => NavBadges,
             Screen.Leaderboard => NavLeaderboard,
             Screen.League => NavLeague,
+            Screen.Admin => NavAdmin,
             _ => NavArena,
         };
         item.IsChecked = true;
@@ -101,6 +109,7 @@ public partial class MainWindow : Window, IShell
             _ when sender == NavBadges => Screen.Badges,
             _ when sender == NavLeaderboard => Screen.Leaderboard,
             _ when sender == NavLeague => Screen.League,
+            _ when sender == NavAdmin => Screen.Admin,
             _ => Screen.Arena,
         };
         Navigate(screen);

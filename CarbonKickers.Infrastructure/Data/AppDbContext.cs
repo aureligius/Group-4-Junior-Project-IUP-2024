@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<LeagueParticipant> LeagueParticipants => Set<LeagueParticipant>();
     public DbSet<Badge> Badges => Set<Badge>();
     public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+    public DbSet<LeagueTierRule> LeagueTierRules => Set<LeagueTierRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -128,6 +129,52 @@ public class AppDbContext : DbContext
                 .WithMany(u => u.LeagueParticipants)
                 .HasForeignKey(lp => lp.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<LeagueTierRule>(entity =>
+        {
+            entity.HasKey(rule => rule.Id);
+
+            entity.Property(rule => rule.TierName).HasMaxLength(50).IsRequired();
+
+            entity.HasIndex(rule => rule.TierName).IsUnique();
+
+            entity.Property(rule => rule.IsActive).HasDefaultValue(true).IsRequired();
+
+            entity.HasData(
+                new LeagueTierRule
+                {
+                    Id = 1,
+                    TierName = "Bronze",
+                    MinXp = 0,
+                    MaxXp = 99,
+                    IsActive = true,
+                },
+                new LeagueTierRule
+                {
+                    Id = 2,
+                    TierName = "Silver",
+                    MinXp = 100,
+                    MaxXp = 299,
+                    IsActive = true,
+                },
+                new LeagueTierRule
+                {
+                    Id = 3,
+                    TierName = "Gold",
+                    MinXp = 300,
+                    MaxXp = 699,
+                    IsActive = true,
+                },
+                new LeagueTierRule
+                {
+                    Id = 4,
+                    TierName = "Diamond",
+                    MinXp = 700,
+                    MaxXp = null,
+                    IsActive = true,
+                }
+            );
         });
     }
 }

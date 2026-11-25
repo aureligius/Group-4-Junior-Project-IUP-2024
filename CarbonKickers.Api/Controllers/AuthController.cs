@@ -15,9 +15,7 @@ public sealed class AuthController : ControllerBase
     private readonly IUserAuthService _userAuthService;
     private readonly IConfiguration _configuration;
 
-    public AuthController(
-        IUserAuthService userAuthService,
-        IConfiguration configuration)
+    public AuthController(IUserAuthService userAuthService, IConfiguration configuration)
     {
         _userAuthService = userAuthService;
         _configuration = configuration;
@@ -33,10 +31,10 @@ public sealed class AuthController : ControllerBase
             return BadRequest(new { message = result.Error });
         }
 
-        return StatusCode(StatusCodes.Status201Created, new
-        {
-            message = "Account created successfully."
-        });
+        return StatusCode(
+            StatusCodes.Status201Created,
+            new { message = "Account created successfully." }
+        );
     }
 
     [HttpPost("login")]
@@ -51,10 +49,9 @@ public sealed class AuthController : ControllerBase
 
         var token = CreateToken(result.User);
 
-        return Ok(new LoginResponse(
-            token,
-            result.User.Username,
-            result.User.Email));
+        return Ok(
+            new LoginResponse(token, result.User.Username, result.User.Email, result.User.Role)
+        );
     }
 
     private string CreateToken(AuthenticatedUser user)
@@ -71,7 +68,7 @@ public sealed class AuthController : ControllerBase
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.Username),
             new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString()),
         };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
@@ -81,9 +78,8 @@ public sealed class AuthController : ControllerBase
             audience: audience,
             claims: claims,
             expires: DateTime.UtcNow.AddHours(8),
-            signingCredentials: new SigningCredentials(
-                signingKey,
-                SecurityAlgorithms.HmacSha256));
+            signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+        );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }

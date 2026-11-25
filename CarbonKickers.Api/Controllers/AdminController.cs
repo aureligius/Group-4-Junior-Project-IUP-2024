@@ -31,6 +31,49 @@ public sealed class AdminController : ControllerBase
         return Ok(await _adminService.CreateCurrentWeekLeaguesAsync());
     }
 
+    [HttpGet("league-tier-rules")]
+    public async Task<ActionResult<IReadOnlyList<LeagueTierRuleAdminResponse>>> GetLeagueTierRules()
+    {
+        return Ok(await _adminService.GetLeagueTierRulesAsync());
+    }
+
+    [HttpPost("league-tier-rules")]
+    public async Task<ActionResult<LeagueTierRuleAdminResponse>> CreateLeagueTierRule(
+        SaveLeagueTierRuleRequest request
+    )
+    {
+        try
+        {
+            var rule = await _adminService.CreateLeagueTierRuleAsync(request);
+
+            return StatusCode(StatusCodes.Status201Created, rule);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [HttpPut("league-tier-rules/{ruleId:int}")]
+    public async Task<ActionResult<LeagueTierRuleAdminResponse>> UpdateLeagueTierRule(
+        int ruleId,
+        SaveLeagueTierRuleRequest request
+    )
+    {
+        try
+        {
+            return Ok(await _adminService.UpdateLeagueTierRuleAsync(ruleId, request));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(new { message = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
     [HttpGet("badges")]
     [ProducesResponseType(typeof(IReadOnlyList<AdminBadgeResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<AdminBadgeResponse>>> GetBadges()

@@ -20,9 +20,9 @@ public sealed class LeaguesController : ControllerBase
 
     [HttpGet("tiers")]
     [ProducesResponseType(typeof(IReadOnlyList<LeagueTierResponse>), StatusCodes.Status200OK)]
-    public ActionResult<IReadOnlyList<LeagueTierResponse>> GetTiers()
+    public async Task<ActionResult<IReadOnlyList<LeagueTierResponse>>> GetTiers()
     {
-        return Ok(_leagueService.GetTiers());
+        return Ok(await _leagueService.GetTiersAsync());
     }
 
     [HttpGet("me")]
