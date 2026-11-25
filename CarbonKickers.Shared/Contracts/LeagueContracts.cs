@@ -18,3 +18,5 @@ public sealed record CurrentLeagueResponse(
     int ParticipantCount,
     IReadOnlyList<LeagueStandingResponse> Standings
 );
+
+public sealed record LeagueTierResponse(string TierName, int MinXp, int? MaxXp);

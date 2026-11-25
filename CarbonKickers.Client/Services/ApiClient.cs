@@ -175,4 +175,10 @@ public sealed class ApiClient
                 "The API returned an invalid challenge response."
             );
     }
+
+    public async Task<IReadOnlyList<LeagueTierResponse>> GetLeagueTiersAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<LeagueTierResponse>>("api/leagues/tiers")
+            ?? [];
+    }
 }

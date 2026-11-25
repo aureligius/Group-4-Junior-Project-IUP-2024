@@ -15,6 +15,17 @@ public sealed class LeagueService : ILeagueService
         _db = db;
     }
 
+    public IReadOnlyList<LeagueTierResponse> GetTiers()
+{
+    return LeagueTierCatalog.All
+        .Select(tier => new LeagueTierResponse(
+            tier.TierName,
+            tier.MinXp,
+            tier.MaxXp
+        ))
+        .ToList();
+}
+
     public async Task JoinEligibleCurrentLeagueAsync(User user)
     {
         var now = DateTime.UtcNow;

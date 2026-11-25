@@ -15,15 +15,7 @@ public partial class LeagueView : UserControl
     private readonly IShell _shell;
     private CurrentLeagueResponse? _league;
 
-    private sealed record Tier(string Name, int MinXp, int? MaxXp);
-
-    private static readonly IReadOnlyList<Tier> Tiers =
-    [
-        new("Bronze", 0, 99),
-        new("Silver", 100, 299),
-        new("Gold", 300, 699),
-        new("Diamond", 700, null),
-    ];
+    private IReadOnlyList<LeagueTierResponse> _tiers = [];
 
     public LeagueView(IShell shell)
     {
@@ -60,6 +52,7 @@ public partial class LeagueView : UserControl
     {
         try
         {
+            _tiers = await _shell.Api.GetLeagueTiersAsync();
             _league = await _shell.Api.GetMyLeagueAsync();
 
             if (_league is null)
@@ -90,7 +83,13 @@ public partial class LeagueView : UserControl
         }
 
         var league = _league;
-        var currentTier = Tiers.FirstOrDefault(t => t.Name == league.TierName) ?? Tiers[0];
+        var currentTier = _tiers.FirstOrDefault(tier => tier.TierName == league.TierName);
+
+        if (currentTier is null)
+        {
+            ShowNoLeague("The API returned an unknown league tier.");
+            return;
+        }
 
         LeagueDot.Fill = TierBrush(league.TierName);
         LeagueTitleText.Text = $"{league.TierName.ToUpperInvariant()} LEAGUE";
@@ -99,9 +98,13 @@ public partial class LeagueView : UserControl
 
         DaysLeftText.Text = $"{daysLeft} day{(daysLeft == 1 ? "" : "s")} left";
 
+        var tierRange = currentTier.MaxXp is null
+            ? $"{currentTier.MinXp:N0}+ XP"
+            : $"{currentTier.MinXp:N0}–{currentTier.MaxXp:N0} XP";
+
         LadderSummaryText.Text =
             $"{league.ParticipantCount} player{(league.ParticipantCount == 1 ? "" : "s")} in your league · "
-            + $"tier range: {league.MinXp:N0}–{league.MaxXp:N0} XP";
+            + $"tier range: {tierRange}";
 
         ShowStandings(league.Standings);
         ShowLadder(currentTier);
@@ -147,23 +150,31 @@ public partial class LeagueView : UserControl
             .ToList();
     }
 
-    private void ShowLadder(Tier currentTier)
-    {
-        var raised = (Brush)FindResource("Brush.GameRaised");
-        var deep = (Brush)FindResource("Brush.GameDeep");
+    private void ShowLadder(LeagueTierResponse? currentTier)
+{
+    var raised = (Brush)FindResource("Brush.GameRaised");
+    var deep = (Brush)FindResource("Brush.GameDeep");
 
-        TiersItems.ItemsSource = Tiers
-            .Reverse()
-            .Select(tier => new TierRow(
-                tier.Name,
-                tier.Name == currentTier.Name ? FontWeights.Bold : FontWeights.Normal,
-                TierBrush(tier.Name),
-                tier.MaxXp is null ? $"{tier.MinXp:N0}+ XP" : $"{tier.MinXp:N0}–{tier.MaxXp:N0} XP",
-                tier.Name == currentTier.Name ? Visibility.Visible : Visibility.Hidden,
-                tier.Name == currentTier.Name ? raised : deep
-            ))
-            .ToList();
-    }
+    TiersItems.ItemsSource = _tiers
+        .Reverse()
+        .Select(tier => new TierRow(
+            tier.TierName,
+            tier.TierName == currentTier?.TierName
+                ? FontWeights.Bold
+                : FontWeights.Normal,
+            TierBrush(tier.TierName),
+            tier.MaxXp is null
+                ? $"{tier.MinXp:N0}+ XP"
+                : $"{tier.MinXp:N0}–{tier.MaxXp:N0} XP",
+            tier.TierName == currentTier?.TierName
+                ? Visibility.Visible
+                : Visibility.Hidden,
+            tier.TierName == currentTier?.TierName
+                ? raised
+                : deep
+        ))
+        .ToList();
+}
 
     private Brush TierBrush(string tierName)
     {
@@ -176,6 +187,7 @@ public partial class LeagueView : UserControl
         NoLeagueText.Visibility = Visibility.Visible;
 
         StandingsItems.ItemsSource = Array.Empty<StandingRow>();
+        ShowLadder(null);
         LeagueTitleText.Text = "NO ACTIVE LEAGUE";
         DaysLeftText.Text = "";
         LadderSummaryText.Text = "Weekly leagues run from Monday to Sunday.";

@@ -14,7 +14,7 @@ public partial class LogTripView : UserControl
 {
     private readonly IShell _shell;
     private readonly ApiClient _apiClient;
-
+    private IReadOnlyList<LeagueTierResponse> _tiers = [];
     private PlaceSuggestionResponse? _selectedOrigin;
     private PlaceSuggestionResponse? _selectedDestination;
 
@@ -41,7 +41,13 @@ public partial class LogTripView : UserControl
     {
         try
         {
-            var modes = await _apiClient.GetTransportModesAsync();
+            var modesTask = _apiClient.GetTransportModesAsync();
+            var tiersTask = _apiClient.GetLeagueTiersAsync();
+
+            await Task.WhenAll(modesTask, tiersTask);
+
+            var modes = await modesTask;
+            _tiers = await tiersTask;
 
             TransportModeComboBox.ItemsSource = modes;
             BaselineModeComboBox.ItemsSource = modes;
@@ -393,14 +399,15 @@ public partial class LogTripView : UserControl
     // Banked XP in gold; XP from this trip shows in peach underneath until the gold catches up
     private void ShowTierBar(int banked, int total)
     {
-        var tier = TierCatalog.ForXp(total);
-        var next = TierCatalog.NextAfter(tier);
+        var tier = TierForXp(total);
+        var next = NextTier(tier);
 
         TierGain.Value = Percent(tier, next, total);
         TierProgress.Value = Percent(tier, next, banked);
+
         TierProgressText.Text = next is null
             ? $"{total:N0} XP · top tier reached"
-            : $"{total:N0} XP · {next.MinXp - total:N0} XP to {next.Name}";
+            : $"{total:N0} XP · {next.MinXp - total:N0} XP to {next.TierName}";
     }
 
     private async Task FillTierBarAsync(
@@ -411,8 +418,8 @@ public partial class LogTripView : UserControl
     )
     {
         var easeOut = new ExponentialEase { EasingMode = EasingMode.EaseOut, Exponent = 5 };
-        var tierBefore = TierCatalog.ForXp(before);
-        var tierAfter = TierCatalog.ForXp(after);
+        var tierBefore = TierForXp(before);
+        var tierAfter = TierForXp(after);
 
         if (!animate)
         {
@@ -433,7 +440,7 @@ public partial class LogTripView : UserControl
             );
             await Task.Delay(400, token);
             TierProgress.BeginAnimation(RangeBase.ValueProperty, null);
-            ShowTierBar(TierCatalog.ForXp(after).MinXp, after);
+            ShowTierBar(TierForXp(after).MinXp, after);
         }
         else
         {
@@ -450,10 +457,22 @@ public partial class LogTripView : UserControl
         await Task.Delay(550, token);
     }
 
-    private static double Percent(TierCatalog.Tier tier, TierCatalog.Tier? next, int xp) =>
-        next is null
+    private LeagueTierResponse TierForXp(int xp)
+    {
+        return _tiers.Last(tier => xp >= tier.MinXp);
+    }
+
+    private LeagueTierResponse? NextTier(LeagueTierResponse tier)
+    {
+        return _tiers.SkipWhile(item => item.TierName != tier.TierName).Skip(1).FirstOrDefault();
+    }
+
+    private static double Percent(LeagueTierResponse tier, LeagueTierResponse? next, int xp)
+    {
+        return next is null
             ? 100
             : Math.Clamp(100.0 * (xp - tier.MinXp) / (next.MinXp - tier.MinXp), 0, 100);
+    }
 
     private void StopCelebrationAnimations()
     {

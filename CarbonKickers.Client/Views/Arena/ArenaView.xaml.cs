@@ -13,6 +13,8 @@ public partial class ArenaView : UserControl
     private readonly IShell _shell;
     private IReadOnlyList<ChallengeResponse> _challenges = [];
     private int _searchVersion;
+    private UserSearchResponse? _selectedOpponent;
+    private bool _isSelectingOpponent;
 
     public ArenaView(IShell shell)
     {
@@ -183,19 +185,22 @@ public partial class ArenaView : UserControl
         }
     }
 
-    private async void OpponentComboBox_KeyUp(object sender, KeyEventArgs e)
+    private async void OpponentSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (e.Key is Key.Up or Key.Down or Key.Enter or Key.Escape)
+        if (_isSelectingOpponent)
         {
             return;
         }
-        var query = OpponentComboBox.Text.Trim();
+
+        _selectedOpponent = null;
+        SendChallengeButton.IsEnabled = false;
+
+        var query = OpponentSearchTextBox.Text.Trim();
 
         if (query.Length < 2)
         {
-            OpponentComboBox.ItemsSource = null;
-            OpponentComboBox.IsDropDownOpen = false;
-            SendChallengeButton.IsEnabled = false;
+            OpponentResultsListBox.ItemsSource = null;
+            OpponentResultsListBox.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -205,31 +210,42 @@ public partial class ArenaView : UserControl
         {
             var users = await _shell.Api.SearchUsersAsync(query);
 
-            // Ignore a slower old request after the user has typed more text.
             if (searchVersion != _searchVersion)
             {
                 return;
             }
 
-            OpponentComboBox.ItemsSource = users;
-            OpponentComboBox.IsDropDownOpen = users.Count > 0;
-            SendChallengeButton.IsEnabled = false;
+            OpponentResultsListBox.ItemsSource = users;
+            OpponentResultsListBox.Visibility =
+                users.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
         catch
         {
-            // Searching should stay quiet while the user types.
+            OpponentResultsListBox.Visibility = Visibility.Collapsed;
         }
     }
 
-    private void OpponentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OpponentResultsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        SendChallengeButton.IsEnabled = OpponentComboBox.SelectedItem is UserSearchResponse;
+        if (OpponentResultsListBox.SelectedItem is not UserSearchResponse opponent)
+        {
+            return;
+        }
+
+        _isSelectingOpponent = true;
+
+        _selectedOpponent = opponent;
+        OpponentSearchTextBox.Text = opponent.Username;
+        OpponentResultsListBox.Visibility = Visibility.Collapsed;
+        SendChallengeButton.IsEnabled = true;
+
+        _isSelectingOpponent = false;
     }
 
     private async void SendChallengeButton_Click(object sender, RoutedEventArgs e)
     {
         if (
-            OpponentComboBox.SelectedItem is not UserSearchResponse opponent
+            _selectedOpponent is not UserSearchResponse opponent
             || LengthComboBox.SelectedItem is not ComboBoxItem { Tag: string daysText }
             || !int.TryParse(daysText, out var days)
         )
@@ -252,9 +268,10 @@ public partial class ArenaView : UserControl
                 }
             );
 
-            OpponentComboBox.Text = "";
-            OpponentComboBox.ItemsSource = null;
-            OpponentComboBox.SelectedItem = null;
+            _selectedOpponent = null;
+            OpponentSearchTextBox.Clear();
+            OpponentResultsListBox.ItemsSource = null;
+            OpponentResultsListBox.Visibility = Visibility.Collapsed;
 
             ShowStatus(
                 $"Challenge sent to {opponent.Username}. It is waiting for their reply.",
@@ -320,5 +337,11 @@ public partial class ArenaView : UserControl
             ? (Brush)FindResource("Brush.Danger")
             : (Brush)FindResource("Brush.GameMuted");
         SendStatusText.Visibility = Visibility.Visible;
+    }
+
+    private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadChallengesAsync();
+        ShowStatus("Arena updated.", false);
     }
 }

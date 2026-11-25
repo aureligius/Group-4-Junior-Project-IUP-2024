@@ -18,6 +18,13 @@ public sealed class LeaguesController : ControllerBase
         _leagueService = leagueService;
     }
 
+    [HttpGet("tiers")]
+    [ProducesResponseType(typeof(IReadOnlyList<LeagueTierResponse>), StatusCodes.Status200OK)]
+    public ActionResult<IReadOnlyList<LeagueTierResponse>> GetTiers()
+    {
+        return Ok(_leagueService.GetTiers());
+    }
+
     [HttpGet("me")]
     [ProducesResponseType(typeof(CurrentLeagueResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

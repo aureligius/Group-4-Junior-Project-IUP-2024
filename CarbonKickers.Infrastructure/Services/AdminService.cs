@@ -1,4 +1,5 @@
 using CarbonKickers.Application.Admin;
+using CarbonKickers.Application.Leagues;
 using CarbonKickers.Domain.Entities;
 using CarbonKickers.Domain.Enums;
 using CarbonKickers.Infrastructure.Data;
@@ -54,13 +55,7 @@ public sealed class AdminService : IAdminService
         var weekStartUtc = now.Date.AddDays(-daysSinceMonday);
         var weekEndUtc = weekStartUtc.AddDays(7);
 
-        var definitions = new[]
-        {
-            new LeagueDefinition("Bronze", 0, 99),
-            new LeagueDefinition("Silver", 100, 299),
-            new LeagueDefinition("Gold", 300, 699),
-            new LeagueDefinition("Diamond", 700, int.MaxValue),
-        };
+        var definitions = LeagueTierCatalog.All;
 
         foreach (var definition in definitions)
         {
@@ -80,7 +75,7 @@ public sealed class AdminService : IAdminService
                 {
                     TierName = definition.TierName,
                     MinXp = definition.MinXp,
-                    MaxXp = definition.MaxXp,
+                    MaxXp = definition.MaxXp ?? int.MaxValue,
                     StartDate = weekStartUtc,
                     EndDate = weekEndUtc,
                 }
@@ -264,5 +259,5 @@ public sealed class AdminService : IAdminService
         );
     }
 
-    private sealed record LeagueDefinition(string TierName, int MinXp, int MaxXp);
+   
 }

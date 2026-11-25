@@ -30,7 +30,12 @@
         <StackPanel Margin="36,32,36,36">
             <Grid>
                 <TextBlock Style="{StaticResource Text.ScreenTitle}" Text="THE ARENA" />
-
+                <Button
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="RefreshButton_Click"
+                    Content="REFRESH"
+                    Style="{StaticResource Button.GameSmall}" />
             </Grid>
             <TextBlock Style="{StaticResource Text.Subtitle}" Text="Challenge another player: whoever saves more CO₂ before the time runs out wins." />
 
@@ -216,16 +221,18 @@
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Text="Friend" />
-                            <ComboBox
-                                x:Name="OpponentComboBox"
+                            <TextBox
+                                x:Name="OpponentSearchTextBox"
                                 MinHeight="34"
-                                Padding="8,4"
+                                TextChanged="OpponentSearchTextBox_TextChanged" />
+
+                            <ListBox
+                                x:Name="OpponentResultsListBox"
+                                MaxHeight="130"
+                                Margin="0,6,0,0"
                                 DisplayMemberPath="Username"
-                                IsEditable="True"
-                                IsTextSearchEnabled="False"
-                                KeyUp="OpponentComboBox_KeyUp"
-                                SelectionChanged="OpponentComboBox_SelectionChanged"
-                                Style="{x:Null}" />
+                                SelectionChanged="OpponentResultsListBox_SelectionChanged"
+                                Visibility="Collapsed" />
                             <TextBlock
                                 Margin="0,14,0,6"
                                 FontSize="13"

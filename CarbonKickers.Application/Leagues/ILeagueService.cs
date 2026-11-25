@@ -7,6 +7,7 @@ public interface ILeagueService
 {
     Task JoinEligibleCurrentLeagueAsync(User user);
 
-    Task<CurrentLeagueResponse?> GetCurrentLeagueAsync(
-        Guid userId);
+    Task<CurrentLeagueResponse?> GetCurrentLeagueAsync(Guid userId);
+
+    IReadOnlyList<LeagueTierResponse> GetTiers();
 }
