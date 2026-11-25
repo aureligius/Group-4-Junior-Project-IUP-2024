@@ -5,22 +5,93 @@ using CarbonKickers.Shared.Contracts;
 
 namespace CarbonKickers.Client.Services;
 
+/// <summary>
+/// Thrown when a signed-in request comes back 401: the login token has expired.
+/// The <see cref="ApiClient.SessionExpired"/> event has already sent the user back to login,
+/// so screens don't need to show anything for it.
+/// </summary>
+public sealed class SessionExpiredException : Exception
+{
+    public SessionExpiredException()
+        : base("Your session has expired. Please log in again.") { }
+}
+
 public sealed class ApiClient
 {
     private readonly HttpClient _httpClient;
 
     public ApiClient()
     {
-        _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7211/") };
+        _httpClient = new HttpClient(new SessionExpiryHandler(this))
+        {
+            BaseAddress = new Uri("https://localhost:7211/"),
+            // HttpClient waits 100 s by default. Saving a trip makes two Google route calls
+            // (15 s limit each on the API), so 30 s covers a slow save without a long freeze.
+            Timeout = TimeSpan.FromSeconds(30),
+        };
     }
 
+    /// <summary>
+    /// Raised once, on the UI thread, when the API rejects the login token (it lasts 8 hours).
+    /// </summary>
+    public event EventHandler? SessionExpired;
+
+    private int _sessionExpiredRaised;
+
+    private void OnSessionExpired()
+    {
+        if (Interlocked.Exchange(ref _sessionExpiredRaised, 1) == 1)
+        {
+            return;
+        }
+
+        System.Windows.Application.Current?.Dispatcher.InvokeAsync(
+            () => SessionExpired?.Invoke(this, EventArgs.Empty)
+        );
+    }
+
+    // Sits in front of every request: a 401 on a request that carried a token means it expired.
+    private sealed class SessionExpiryHandler(ApiClient owner) : DelegatingHandler(new HttpClientHandler())
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            var response = await base.SendAsync(request, cancellationToken);
+
+            var hadToken = owner._httpClient.DefaultRequestHeaders.Authorization is not null;
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && hadToken)
+            {
+                owner.OnSessionExpired();
+                throw new SessionExpiredException();
+            }
+
+            return response;
+        }
+    }
+
+    /// <summary>
+    /// Logs in. Returns null when the email or password is wrong; throws
+    /// <see cref="InvalidOperationException"/> with the reason for any other failure.
+    /// </summary>
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/login", request);
 
-        if (!response.IsSuccessStatusCode)
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             return null;
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // e.g. the database is down (500): say so instead of blaming the password
+            throw new InvalidOperationException(
+                await ReadErrorMessageAsync(response)
+                    ?? $"Login failed on the server (HTTP {(int)response.StatusCode}). Please try again."
+            );
         }
 
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>();

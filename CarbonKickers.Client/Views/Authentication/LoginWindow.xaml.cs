@@ -16,6 +16,13 @@ public partial class LoginWindow : Window
         InitializeComponent();
     }
 
+    // Opens the login form with a note on top, e.g. after the session expired
+    public LoginWindow(string notice)
+        : this()
+    {
+        ShowLoginError(notice);
+    }
+
     private void ShowRegisterButton_Click(object sender, RoutedEventArgs e) => ShowRegisterForm();
 
     private void ShowLoginButton_Click(object sender, RoutedEventArgs e) => ShowLoginForm();
@@ -87,6 +94,11 @@ public partial class LoginWindow : Window
         catch (TaskCanceledException)
         {
             ShowLoginError("The API request timed out.");
+        }
+        catch (InvalidOperationException exception)
+        {
+            // A server-side failure (not a wrong password); LoginAsync puts the reason in the message
+            ShowLoginError(exception.Message);
         }
         finally
         {
