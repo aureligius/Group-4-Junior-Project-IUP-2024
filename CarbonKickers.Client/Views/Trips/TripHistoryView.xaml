@@ -14,7 +14,7 @@
                 <TextBlock x:Name="SummaryText" Text="Your latest trips and their carbon impact."
                            Style="{StaticResource Text.Subtitle}"/>
             </StackPanel>
-            <Button Content="Log a trip" Style="{StaticResource Button.Primary}" HorizontalAlignment="Right"
+            <Button Content="LOG A TRIP" Style="{StaticResource Button.GameSmall}" HorizontalAlignment="Right"
                     VerticalAlignment="Top" Click="LogTripButton_Click"/>
         </Grid>
 
@@ -80,7 +80,7 @@
                 <TextBlock Text="No trips logged yet." Style="{StaticResource Text.Heading}" HorizontalAlignment="Center"/>
                 <TextBlock Text="Your first trip shows up here with its distance, CO₂ kicked and XP."
                            Style="{StaticResource Text.Muted}" Margin="0,6,0,16" HorizontalAlignment="Center"/>
-                <Button Content="Log your first trip" Style="{StaticResource Button.Primary}" HorizontalAlignment="Center"
+                <Button Content="LOG YOUR FIRST TRIP" Style="{StaticResource Button.Game}" HorizontalAlignment="Center"
                         Click="LogTripButton_Click"/>
             </StackPanel>
 

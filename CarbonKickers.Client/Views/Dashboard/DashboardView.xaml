@@ -217,8 +217,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="CompeteStatusText" Style="{StaticResource Text.Muted}" VerticalAlignment="Center"/>
-                            <Button x:Name="JoinCompetitionButton" Grid.Column="1" Content="Join" Style="{StaticResource Button.Primary}"
-                                    Padding="16,6" FontSize="13" Margin="12,0,0,0" VerticalAlignment="Center"
+                            <Button x:Name="JoinCompetitionButton" Grid.Column="1" Content="JOIN" Style="{StaticResource Button.GameSmall}"
+                                    Margin="12,0,0,0" VerticalAlignment="Center"
                                     Click="JoinCompetitionButton_Click"/>
                         </Grid>
 
