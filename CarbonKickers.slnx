@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/CarbonKickers.Tests/CarbonKickers.Tests.csproj" />
+  </Folder>
   <Project Path="CarbonKickers.Api/CarbonKickers.Api.csproj" />
   <Project Path="CarbonKickers.Application/CarbonKickers.Application.csproj" />
   <Project Path="CarbonKickers.Client/CarbonKickers.Client.csproj" />
