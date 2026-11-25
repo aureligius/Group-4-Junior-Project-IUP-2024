@@ -1,20 +1,29 @@
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using CarbonKickers.Client.Services;
 using CarbonKickers.Client.Views.Shell;
 using CarbonKickers.Shared.Contracts;
 
 namespace CarbonKickers.Client.Views.League;
 
-// Preview screen: league members come from PreviewData until the API has league endpoints
 public partial class LeagueView : UserControl
 {
     private const int PromotionSpots = 3;
     private const int RelegationSpots = 2;
 
     private readonly IShell _shell;
-    private IReadOnlyList<TripHistoryResponse> _trips = [];
+    private CurrentLeagueResponse? _league;
+
+    private sealed record Tier(string Name, int MinXp, int? MaxXp);
+
+    private static readonly IReadOnlyList<Tier> Tiers =
+    [
+        new("Bronze", 0, 99),
+        new("Silver", 100, 299),
+        new("Gold", 300, 699),
+        new("Diamond", 700, null),
+    ];
 
     public LeagueView(IShell shell)
     {
@@ -35,7 +44,8 @@ public partial class LeagueView : UserControl
         Brush RowBorder,
         Visibility DividerVisibility,
         string DividerText,
-        Brush DividerBrush);
+        Brush DividerBrush
+    );
 
     public sealed record TierRow(
         string Name,
@@ -43,116 +53,131 @@ public partial class LeagueView : UserControl
         Brush TierBrush,
         string RangeText,
         Visibility PlayerVisibility,
-        Brush RowBackground);
+        Brush RowBackground
+    );
 
     private async void LeagueView_Loaded(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (_shell.Player is null)
+            _league = await _shell.Api.GetMyLeagueAsync();
+
+            if (_league is null)
             {
-                await _shell.RefreshPlayerAsync();
+                ShowNoLeague(
+                    "No weekly league is available yet. Ask an admin to create this week's leagues."
+                );
+                return;
             }
 
-            _trips = await _shell.Api.GetTripsAsync();
+            ShowLeague();
+        }
+        catch (HttpRequestException)
+        {
+            ShowNoLeague("Cannot reach the API. Start CarbonKickers.Api first.");
         }
         catch (Exception)
         {
-            // The league still shows its sample players without the player's own numbers
+            ShowNoLeague("Unable to load your weekly league. Please log in again.");
         }
-
-        Show();
     }
 
-    private void Show()
+    private void ShowLeague()
     {
-        var me = _shell.Player;
-        var myXp = me?.GreenXp ?? 0;
-        var tier = PreviewData.TierFor(myXp);
-        var next = PreviewData.NextTier(tier);
-        var myWeeklyXp = _trips.Where(t => t.LoggedAt >= PreviewData.WeekStart).Sum(t => t.XpEarned);
-
-        LeagueDot.Fill = TierBrush(tier.Name);
-        LeagueTitleText.Text = $"{tier.Name.ToUpperInvariant()} LEAGUE";
-        DaysLeftText.Text = $"{PreviewData.DaysLeftThisWeek} days left";
-        JoinTitleText.Text = $"This week's {tier.Name} league is open.";
-        JoinBanner.Visibility = PreviewData.HasJoinedLeague ? Visibility.Collapsed : Visibility.Visible;
-
-        LadderSummaryText.Text = next is null
-            ? $"{myXp:N0} Green XP. You're at the top."
-            : $"{myXp:N0} Green XP. {next.MinXp - myXp:N0} more to reach {next.Name}.";
-
-        ShowStandings(tier, me?.Username, myWeeklyXp);
-        ShowLadder(tier);
-    }
-
-    private void ShowStandings(PreviewData.Tier tier, string? myName, int myWeeklyXp)
-    {
-        var entries = PreviewData.LeagueRivals(tier)
-            .Select(r => (Name: r.Username, Xp: r.WeeklyXp, IsYou: false))
-            .ToList();
-
-        if (PreviewData.HasJoinedLeague && myName is not null)
+        if (_league is null)
         {
-            entries.Add((myName, myWeeklyXp, true));
+            return;
         }
 
-        var ranked = entries.OrderByDescending(e => e.Xp).ToList();
+        var league = _league;
+        var currentTier = Tiers.FirstOrDefault(t => t.Name == league.TierName) ?? Tiers[0];
+
+        LeagueDot.Fill = TierBrush(league.TierName);
+        LeagueTitleText.Text = $"{league.TierName.ToUpperInvariant()} LEAGUE";
+
+        var daysLeft = Math.Max(0, (league.EndDate.Date - DateTime.UtcNow.Date).Days);
+
+        DaysLeftText.Text = $"{daysLeft} day{(daysLeft == 1 ? "" : "s")} left";
+
+        LadderSummaryText.Text =
+            $"{league.ParticipantCount} player{(league.ParticipantCount == 1 ? "" : "s")} in your league · "
+            + $"tier range: {league.MinXp:N0}–{league.MaxXp:N0} XP";
+
+        ShowStandings(league.Standings);
+        ShowLadder(currentTier);
+
+        NoLeagueText.Visibility = Visibility.Collapsed;
+    }
+
+    private void ShowStandings(IReadOnlyList<LeagueStandingResponse> standings)
+    {
         var gold = (Brush)FindResource("Brush.Gold");
         var coral = (Brush)FindResource("Brush.Coral");
         var muted = (Brush)FindResource("Brush.GameMuted");
         var deep = (Brush)FindResource("Brush.GameDeep");
-        var mine = (Brush)FindResource("Brush.GameRaised");
-        var gold1 = (Brush)FindResource("Brush.Gold");
-        var relegationStart = ranked.Count - RelegationSpots;
+        var raised = (Brush)FindResource("Brush.GameRaised");
 
-        StandingsItems.ItemsSource = ranked
-            .Select((e, i) =>
+        var relegationStart = Math.Max(PromotionSpots, standings.Count - RelegationSpots);
+
+        StandingsItems.ItemsSource = standings
+            .Select(entry =>
             {
-                // Dividers sit above the first row after the promotion zone and above the relegation zone
-                var (divider, text, brush) = i == PromotionSpots
-                    ? (Visibility.Visible, "Promotion zone above", gold)
-                    : i == relegationStart
+                var (divider, text, brush) =
+                    entry.Rank == PromotionSpots + 1
+                        ? (Visibility.Visible, "Promotion zone above", gold)
+                    : entry.Rank == relegationStart + 1 && standings.Count > PromotionSpots
                         ? (Visibility.Visible, "Relegation zone below", coral)
-                        : (Visibility.Collapsed, "", muted);
+                    : (Visibility.Collapsed, "", muted);
 
                 return new StandingRow(
-                    $"#{i + 1}",
-                    i < PromotionSpots ? gold : i >= relegationStart ? coral : muted,
-                    e.IsYou ? $"{e.Name} (you)" : e.Name,
-                    e.IsYou ? FontWeights.Bold : FontWeights.Normal,
-                    e.Xp.ToString("N0"),
-                    e.IsYou ? mine : deep,
-                    e.IsYou ? gold1 : Brushes.Transparent,
+                    $"#{entry.Rank}",
+                    entry.Rank <= PromotionSpots ? gold
+                        : entry.Rank > relegationStart ? coral
+                        : muted,
+                    entry.IsCurrentUser ? $"{entry.Username} (you)" : entry.Username,
+                    entry.IsCurrentUser ? FontWeights.Bold : FontWeights.Normal,
+                    entry.XpEarned.ToString("N0"),
+                    entry.IsCurrentUser ? raised : deep,
+                    entry.IsCurrentUser ? gold : Brushes.Transparent,
                     divider,
                     text,
-                    brush);
+                    brush
+                );
             })
             .ToList();
     }
 
-    private void ShowLadder(PreviewData.Tier current)
+    private void ShowLadder(Tier currentTier)
     {
         var raised = (Brush)FindResource("Brush.GameRaised");
         var deep = (Brush)FindResource("Brush.GameDeep");
 
-        TiersItems.ItemsSource = PreviewData.Tiers
+        TiersItems.ItemsSource = Tiers
             .Reverse()
-            .Select(t => new TierRow(
-                t.Name,
-                t == current ? FontWeights.Bold : FontWeights.Normal,
-                TierBrush(t.Name),
-                t.MaxXp is null ? $"{t.MinXp:N0}+ XP" : $"{t.MinXp:N0}–{t.MaxXp:N0} XP",
-                t == current ? Visibility.Visible : Visibility.Hidden,
-                t == current ? raised : deep))
+            .Select(tier => new TierRow(
+                tier.Name,
+                tier.Name == currentTier.Name ? FontWeights.Bold : FontWeights.Normal,
+                TierBrush(tier.Name),
+                tier.MaxXp is null ? $"{tier.MinXp:N0}+ XP" : $"{tier.MinXp:N0}–{tier.MaxXp:N0} XP",
+                tier.Name == currentTier.Name ? Visibility.Visible : Visibility.Hidden,
+                tier.Name == currentTier.Name ? raised : deep
+            ))
             .ToList();
     }
 
-    private Brush TierBrush(string tierName) => (Brush)FindResource($"Brush.Tier.{tierName}");
-
-    private void JoinButton_Click(object sender, RoutedEventArgs e)
+    private Brush TierBrush(string tierName)
     {
-        PreviewData.JoinLeague();
-        Show();
+        return (Brush)FindResource($"Brush.Tier.{tierName}");
+    }
+
+    private void ShowNoLeague(string message)
+    {
+        NoLeagueText.Text = message;
+        NoLeagueText.Visibility = Visibility.Visible;
+
+        StandingsItems.ItemsSource = Array.Empty<StandingRow>();
+        LeagueTitleText.Text = "NO ACTIVE LEAGUE";
+        DaysLeftText.Text = "";
+        LadderSummaryText.Text = "Weekly leagues run from Monday to Sunday.";
     }
 }

@@ -314,8 +314,14 @@ public partial class LogTripView : UserControl
         {
             if (animate)
             {
-                ResultBorder.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)));
-                var pop = new DoubleAnimation(0.96, 1, TimeSpan.FromMilliseconds(250)) { EasingFunction = easeOut };
+                ResultBorder.BeginAnimation(
+                    OpacityProperty,
+                    new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200))
+                );
+                var pop = new DoubleAnimation(0.96, 1, TimeSpan.FromMilliseconds(250))
+                {
+                    EasingFunction = easeOut,
+                };
                 ResultScale.BeginAnimation(ScaleTransform.ScaleXProperty, pop);
                 ResultScale.BeginAnimation(ScaleTransform.ScaleYProperty, pop);
 
@@ -343,7 +349,12 @@ public partial class LogTripView : UserControl
             }
             else
             {
-                await FillTierBarAsync(player.GreenXp - result.XpEarned, player.GreenXp, animate, token);
+                await FillTierBarAsync(
+                    player.GreenXp - result.XpEarned,
+                    player.GreenXp,
+                    animate,
+                    token
+                );
             }
 
             if (hasBadges && animate)
@@ -353,13 +364,21 @@ public partial class LogTripView : UserControl
                 NewBadgesItems.RenderTransformOrigin = new Point(0.5, 0.5);
                 NewBadgesItems.RenderTransform = scale;
 
-                var badgePop = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(380) };
+                var badgePop = new DoubleAnimationUsingKeyFrames
+                {
+                    Duration = TimeSpan.FromMilliseconds(380),
+                };
                 badgePop.KeyFrames.Add(new DiscreteDoubleKeyFrame(0.6, KeyTime.FromPercent(0)));
-                badgePop.KeyFrames.Add(new EasingDoubleKeyFrame(1.08, KeyTime.FromPercent(0.6), easeOut));
+                badgePop.KeyFrames.Add(
+                    new EasingDoubleKeyFrame(1.08, KeyTime.FromPercent(0.6), easeOut)
+                );
                 badgePop.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromPercent(1)));
                 scale.BeginAnimation(ScaleTransform.ScaleXProperty, badgePop);
                 scale.BeginAnimation(ScaleTransform.ScaleYProperty, badgePop);
-                NewBadgesItems.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150)));
+                NewBadgesItems.BeginAnimation(
+                    OpacityProperty,
+                    new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150))
+                );
                 await Task.Delay(380, token);
             }
 
@@ -374,8 +393,8 @@ public partial class LogTripView : UserControl
     // Banked XP in gold; XP from this trip shows in peach underneath until the gold catches up
     private void ShowTierBar(int banked, int total)
     {
-        var tier = PreviewData.TierFor(total);
-        var next = PreviewData.NextTier(tier);
+        var tier = TierCatalog.ForXp(total);
+        var next = TierCatalog.NextAfter(tier);
 
         TierGain.Value = Percent(tier, next, total);
         TierProgress.Value = Percent(tier, next, banked);
@@ -384,11 +403,16 @@ public partial class LogTripView : UserControl
             : $"{total:N0} XP · {next.MinXp - total:N0} XP to {next.Name}";
     }
 
-    private async Task FillTierBarAsync(int before, int after, bool animate, CancellationToken token)
+    private async Task FillTierBarAsync(
+        int before,
+        int after,
+        bool animate,
+        CancellationToken token
+    )
     {
         var easeOut = new ExponentialEase { EasingMode = EasingMode.EaseOut, Exponent = 5 };
-        var tierBefore = PreviewData.TierFor(before);
-        var tierAfter = PreviewData.TierFor(after);
+        var tierBefore = TierCatalog.ForXp(before);
+        var tierAfter = TierCatalog.ForXp(after);
 
         if (!animate)
         {
@@ -400,25 +424,36 @@ public partial class LogTripView : UserControl
         {
             // Tier up: fill the old tier to the brim, then start the new one from empty
             TierGain.Value = 100;
-            TierProgress.BeginAnimation(RangeBase.ValueProperty,
-                new DoubleAnimation(100, TimeSpan.FromMilliseconds(300)) { EasingFunction = easeOut });
+            TierProgress.BeginAnimation(
+                RangeBase.ValueProperty,
+                new DoubleAnimation(100, TimeSpan.FromMilliseconds(300))
+                {
+                    EasingFunction = easeOut,
+                }
+            );
             await Task.Delay(400, token);
             TierProgress.BeginAnimation(RangeBase.ValueProperty, null);
-            ShowTierBar(PreviewData.TierFor(after).MinXp, after);
+            ShowTierBar(TierCatalog.ForXp(after).MinXp, after);
         }
         else
         {
             ShowTierBar(before, after);
         }
 
-        TierProgress.BeginAnimation(RangeBase.ValueProperty,
-            new DoubleAnimation(TierGain.Value, TimeSpan.FromMilliseconds(600)) { EasingFunction = easeOut });
+        TierProgress.BeginAnimation(
+            RangeBase.ValueProperty,
+            new DoubleAnimation(TierGain.Value, TimeSpan.FromMilliseconds(600))
+            {
+                EasingFunction = easeOut,
+            }
+        );
         await Task.Delay(550, token);
     }
 
-    private static double Percent(PreviewData.Tier tier, PreviewData.Tier? next, int xp) => next is null
-        ? 100
-        : Math.Clamp(100.0 * (xp - tier.MinXp) / (next.MinXp - tier.MinXp), 0, 100);
+    private static double Percent(TierCatalog.Tier tier, TierCatalog.Tier? next, int xp) =>
+        next is null
+            ? 100
+            : Math.Clamp(100.0 * (xp - tier.MinXp) / (next.MinXp - tier.MinXp), 0, 100);
 
     private void StopCelebrationAnimations()
     {
@@ -452,7 +487,8 @@ public partial class LogTripView : UserControl
         OriginTextBox.Focus();
     }
 
-    private void BackToDashboardButton_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.Dashboard);
+    private void BackToDashboardButton_Click(object sender, RoutedEventArgs e) =>
+        _shell.Navigate(Screen.Dashboard);
 
     private void ShowError(string message)
     {

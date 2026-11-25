@@ -96,4 +96,83 @@ public sealed class ApiClient
     {
         return await _httpClient.GetFromJsonAsync<List<BadgeResponse>>("api/badges/me") ?? [];
     }
+
+    public async Task<WeeklyLeaderboardResponse> GetWeeklyLeaderboardAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<WeeklyLeaderboardResponse>(
+            "api/leaderboard/weekly"
+        )
+            ?? throw new InvalidOperationException(
+                "The API returned an invalid weekly leaderboard response."
+            );
+    }
+
+    public async Task<CurrentLeagueResponse?> GetMyLeagueAsync()
+    {
+        var response = await _httpClient.GetAsync("api/leagues/me");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<CurrentLeagueResponse>()
+            ?? throw new InvalidOperationException("The API returned an invalid league response.");
+    }
+
+    public async Task<IReadOnlyList<ChallengeResponse>> GetChallengesAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<ChallengeResponse>>("api/challenges/me")
+            ?? [];
+    }
+
+    public async Task<ChallengeResponse> CreateChallengeAsync(CreateChallengeRequest request)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/challenges", request);
+
+        return await ReadChallengeResponseAsync(response);
+    }
+
+    public async Task<ChallengeResponse> AcceptChallengeAsync(Guid challengeId)
+    {
+        var response = await _httpClient.PostAsync($"api/challenges/{challengeId}/accept", null);
+
+        return await ReadChallengeResponseAsync(response);
+    }
+
+    public async Task<ChallengeResponse> DeclineChallengeAsync(Guid challengeId)
+    {
+        var response = await _httpClient.PostAsync($"api/challenges/{challengeId}/decline", null);
+
+        return await ReadChallengeResponseAsync(response);
+    }
+
+    public async Task<IReadOnlyList<UserSearchResponse>> SearchUsersAsync(string query)
+    {
+        var encodedQuery = Uri.EscapeDataString(query);
+
+        return await _httpClient.GetFromJsonAsync<List<UserSearchResponse>>(
+            $"api/users/search?query={encodedQuery}"
+        ) ?? [];
+    }
+
+    private async Task<ChallengeResponse> ReadChallengeResponseAsync(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+
+            throw new InvalidOperationException(
+                error?.Message
+                    ?? $"The API rejected the challenge request (HTTP {(int)response.StatusCode})."
+            );
+        }
+
+        return await response.Content.ReadFromJsonAsync<ChallengeResponse>()
+            ?? throw new InvalidOperationException(
+                "The API returned an invalid challenge response."
+            );
+    }
 }

@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using CarbonKickers.Client.Services;
 using CarbonKickers.Client.Views.Shell;
 using CarbonKickers.Shared.Contracts;
 
@@ -12,9 +11,7 @@ namespace CarbonKickers.Client.Views.Dashboard;
 
 public partial class DashboardView : UserControl
 {
-    // The tallest bar uses this share of the chart height, leaving room for its value label
     private const double MaxBarShare = 0.85;
-
     private readonly IShell _shell;
 
     public DashboardView(IShell shell)
@@ -26,18 +23,17 @@ public partial class DashboardView : UserControl
         Loaded += DashboardView_Loaded;
     }
 
-    // One bar in the 7-day chart
     public sealed record DayBar(
         string DayLabel,
         GridLength BarFill,
         GridLength BarRest,
         string ValueLabel,
         Visibility ValueVisibility,
-        string Tooltip);
+        string Tooltip
+    );
 
     private async void DashboardView_Loaded(object sender, RoutedEventArgs e)
     {
-        UpdateCompetePanel(_shell.Player?.GreenXp ?? 0);
         await LoadDashboardAsync();
     }
 
@@ -54,9 +50,9 @@ public partial class DashboardView : UserControl
             Co2SavedText.Text = $"{dashboard.TotalCo2SavedKg:F2} kg";
             TotalTripsText.Text = dashboard.TotalTrips.ToString("N0");
 
-            ShowTier(dashboard.GreenXp);
             ShowWeek(dashboard.LastSevenDays);
-            UpdateCompetePanel(dashboard.GreenXp);
+
+            await LoadGamificationSummaryAsync(dashboard);
         }
         catch (HttpRequestException)
         {
@@ -70,117 +66,203 @@ public partial class DashboardView : UserControl
         await LoadBadgesAsync();
     }
 
+    private async Task LoadGamificationSummaryAsync(DashboardResponse dashboard)
+    {
+        await LoadLeaderboardSummaryAsync();
+        await LoadLeagueSummaryAsync(dashboard.GreenXp);
+        await LoadArenaSummaryAsync();
+    }
+
+    private async Task LoadLeaderboardSummaryAsync()
+    {
+        try
+        {
+            var leaderboard = await _shell.Api.GetWeeklyLeaderboardAsync();
+
+
+            if (leaderboard.CurrentUser is null)
+            {
+                CompeteStatusText.Text = "Log a greener trip this week to enter the rankings.";
+                LeaderboardTileText.Text = "No weekly score yet";
+                return;
+            }
+
+            var entry = leaderboard.CurrentUser;
+
+            CompeteStatusText.Text =
+                $"You're ranked #{entry.Rank} this week · {entry.WeeklyCo2SavedKg:F1} kg saved";
+
+            LeaderboardTileText.Text = $"You're #{entry.Rank} this week · {entry.WeeklyXp:N0} XP";
+        }
+        catch
+        {
+            CompeteStatusText.Text = "Leaderboard unavailable right now.";
+            LeaderboardTileText.Text = "View this week's ranking";
+        }
+    }
+
+    private async Task LoadLeagueSummaryAsync(int greenXp)
+    {
+        try
+        {
+            var league = await _shell.Api.GetMyLeagueAsync();
+
+            ShowTier(greenXp, league);
+
+            if (league is null)
+            {
+                LeagueTileTitle.Text = "Weekly league";
+                LeagueTileText.Text = "No active league yet";
+                return;
+            }
+
+            var daysLeft = Math.Max(0, (league.EndDate.Date - DateTime.UtcNow.Date).Days);
+
+            LeagueTileTitle.Text = "Weekly league";
+            LeagueTileText.Text =
+                $"{league.TierName} league · {daysLeft} day{(daysLeft == 1 ? "" : "s")} left";
+        }
+        catch
+        {
+            ShowTier(greenXp, null);
+            LeagueTileTitle.Text = "Weekly league";
+            LeagueTileText.Text = "League unavailable right now";
+        }
+    }
+
+    private async Task LoadArenaSummaryAsync()
+    {
+        try
+        {
+            var challenges = await _shell.Api.GetChallengesAsync();
+
+            var invites = challenges.Count(challenge =>
+                challenge.Status == "Pending" && !challenge.IsCurrentUserChallenger
+            );
+
+            var battles = challenges.Count(challenge => challenge.Status == "Accepted");
+
+            ArenaTileText.Text =
+                invites > 0
+                    ? $"{invites} invite{(invites == 1 ? "" : "s")} waiting · {battles} battle{(battles == 1 ? "" : "s")} on"
+                    : $"{battles} battle{(battles == 1 ? "" : "s")} on";
+        }
+        catch
+        {
+            ArenaTileText.Text = "Challenge another player";
+        }
+    }
+
     private async Task LoadBadgesAsync()
     {
         try
         {
             var badges = await _shell.Api.GetBadgesAsync();
+
             LatestBadgesItems.ItemsSource = badges.Take(3).ToList();
-            // Up to three medals; the rest are counted, the details live in the tooltip
             BadgesSummaryText.Text = badges.Count > 3 ? $"+{badges.Count - 3}" : "";
-            LatestBadgesPanel.ToolTip = badges.Count == 0
-                ? null
-                : $"{badges.Count} unlocked · latest: {badges[0].Title}";
-            LatestBadgesPanel.Visibility = badges.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            LatestBadgesPanel.ToolTip =
+                badges.Count == 0 ? null : $"{badges.Count} unlocked · latest: {badges[0].Title}";
+
+            LatestBadgesPanel.Visibility =
+                badges.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
             NoBadgesText.Visibility = badges.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
-        catch (Exception)
+        catch
         {
             NoBadgesText.Text = "Badges couldn't load.";
             NoBadgesText.Visibility = Visibility.Visible;
         }
     }
 
-    private void ShowTier(int greenXp)
+    private void ShowTier(int greenXp, CurrentLeagueResponse? league)
     {
-        var tier = PreviewData.TierFor(greenXp);
-        var next = PreviewData.NextTier(tier);
+        if (league is null)
+        {
+            TierText.Text = "No active league";
+            TierDot.Fill = (Brush)FindResource("Brush.Tier.Bronze");
+            NextTierText.Text = "Weekly leagues have not been created yet.";
 
-        TierText.Text = $"{tier.Name} league";
-        TierDot.Fill = (Brush)FindResource($"Brush.Tier.{tier.Name}");
+            XpProgress.BeginAnimation(
+                RangeBase.ValueProperty,
+                new DoubleAnimation(0, 0, TimeSpan.Zero)
+            );
+
+            return;
+        }
+
+        TierText.Text = $"{league.TierName} league";
+        TierDot.Fill = (Brush)FindResource($"Brush.Tier.{league.TierName}");
 
         double progress;
-        if (next is null)
+        string progressText;
+
+        if (league.MaxXp == int.MaxValue)
         {
-            NextTierText.Text = "Top tier reached";
             progress = 100;
+            progressText = "Top tier reached";
         }
         else
         {
-            NextTierText.Text = $"{next.MinXp - greenXp:N0} XP to {next.Name}";
-            progress = 100.0 * (greenXp - tier.MinXp) / (next.MinXp - tier.MinXp);
+            progress = Math.Clamp(
+                100.0 * (greenXp - league.MinXp) / (league.MaxXp - league.MinXp + 1),
+                0,
+                100
+            );
+
+            progressText =
+                greenXp > league.MaxXp
+                    ? "Your league changes next week."
+                    : $"{league.MaxXp - greenXp + 1:N0} XP until next tier";
         }
 
-        // Signature moment: the XP bar fills up to where the player stands
-        // Instant when Windows animations are turned off
-        var duration = SystemParameters.ClientAreaAnimation ? TimeSpan.FromMilliseconds(700) : TimeSpan.Zero;
+        NextTierText.Text = progressText;
+
+        var duration = SystemParameters.ClientAreaAnimation
+            ? TimeSpan.FromMilliseconds(700)
+            : TimeSpan.Zero;
+
         XpProgress.BeginAnimation(
             RangeBase.ValueProperty,
             new DoubleAnimation(0, progress, duration)
             {
-                EasingFunction = new ExponentialEase { EasingMode = EasingMode.EaseOut, Exponent = 5 },
-            });
+                EasingFunction = new ExponentialEase
+                {
+                    EasingMode = EasingMode.EaseOut,
+                    Exponent = 5,
+                },
+            }
+        );
     }
 
     private void ShowWeek(IReadOnlyList<DailyImpactResponse> days)
     {
-        var max = days.Count == 0 ? 0 : days.Max(d => d.Co2SavedKg);
-        var total = days.Sum(d => d.Co2SavedKg);
+        var max = days.Count == 0 ? 0 : days.Max(day => day.Co2SavedKg);
+        var total = days.Sum(day => day.Co2SavedKg);
 
         WeekTotalText.Text = $"{total:F2} kg this week";
         EmptyWeekText.Visibility = max <= 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        // Only the best day carries a number; the rest are in the tooltips
-        DailyImpactItems.ItemsSource = days
-            .Select(day =>
+        DailyImpactItems.ItemsSource = days.Select(day =>
             {
-                var share = max <= 0 || day.Co2SavedKg <= 0 ? 0 : Math.Max(0.02, MaxBarShare * day.Co2SavedKg / max);
+                var share =
+                    max <= 0 || day.Co2SavedKg <= 0
+                        ? 0
+                        : Math.Max(0.02, MaxBarShare * day.Co2SavedKg / max);
+
                 return (day, share);
             })
-            .Select(x => new DayBar(
-                x.day.Date.ToString("ddd"),
-                new GridLength(x.share, GridUnitType.Star),
-                new GridLength(1 - x.share, GridUnitType.Star),
-                $"{x.day.Co2SavedKg:F2}",
-                max > 0 && x.day.Co2SavedKg == max ? Visibility.Visible : Visibility.Collapsed,
-                $"{x.day.Date:dddd d MMM}: {x.day.Co2SavedKg:F2} kg CO₂ kicked from {x.day.TripCount} trip(s)"))
+            .Select(item => new DayBar(
+                item.day.Date.ToString("ddd"),
+                new GridLength(item.share, GridUnitType.Star),
+                new GridLength(1 - item.share, GridUnitType.Star),
+                $"{item.day.Co2SavedKg:F2}",
+                max > 0 && item.day.Co2SavedKg == max ? Visibility.Visible : Visibility.Collapsed,
+                $"{item.day.Date:dddd d MMM}: {item.day.Co2SavedKg:F2} kg CO₂ kicked from {item.day.TripCount} trip(s)"
+            ))
             .ToList();
-    }
-
-    private void UpdateCompetePanel(int greenXp)
-    {
-        var tier = PreviewData.TierFor(greenXp);
-        var rank = 1 + PreviewData.Rivals.Count(r => r.GreenXp > greenXp);
-        var invites = PreviewData.Challenges.Count(c => c.State == PreviewData.ChallengeState.Incoming);
-        var battles = PreviewData.Challenges.Count(c => c.State == PreviewData.ChallengeState.Active);
-
-        if (PreviewData.HasJoinedCompetition)
-        {
-            CompeteStatusText.Text = $"You're competing · rank #{rank} of {PreviewData.Rivals.Count + 1}";
-            JoinCompetitionButton.Visibility = Visibility.Collapsed;
-            LeaderboardTileText.Text = $"You're #{rank} all time";
-        }
-        else
-        {
-            CompeteStatusText.Text = "Get ranked and battle other players.";
-            JoinCompetitionButton.Visibility = Visibility.Visible;
-            LeaderboardTileText.Text = "See who's kicking the most CO₂";
-        }
-
-        if (PreviewData.HasJoinedLeague)
-        {
-            LeagueTileTitle.Text = "Weekly league";
-            LeagueTileText.Text = $"{tier.Name} league · {PreviewData.DaysLeftThisWeek} days left";
-        }
-        else
-        {
-            LeagueTileTitle.Text = "Join weekly league";
-            LeagueTileText.Text = $"This week's {tier.Name} league is open";
-        }
-
-        ArenaTileText.Text = invites > 0
-            ? $"{invites} invite waiting · {battles} battles on"
-            : $"{battles} battles on";
     }
 
     private void ShowError(string message)
@@ -189,25 +271,22 @@ public partial class DashboardView : UserControl
         DashboardErrorText.Visibility = Visibility.Visible;
     }
 
-    private void JoinCompetitionButton_Click(object sender, RoutedEventArgs e)
-    {
-        PreviewData.JoinCompetition();
-        UpdateCompetePanel(_shell.Player?.GreenXp ?? 0);
-    }
-
     private void LeagueTile_Click(object sender, RoutedEventArgs e)
     {
-        PreviewData.JoinLeague();
         _shell.Navigate(Screen.League);
     }
 
-    private void LogTripButton_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.LogTrip);
+    private void LogTripButton_Click(object sender, RoutedEventArgs e) =>
+        _shell.Navigate(Screen.LogTrip);
 
-    private void TripHistoryButton_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.History);
+    private void TripHistoryButton_Click(object sender, RoutedEventArgs e) =>
+        _shell.Navigate(Screen.History);
 
-    private void BadgesButton_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.Badges);
+    private void BadgesButton_Click(object sender, RoutedEventArgs e) =>
+        _shell.Navigate(Screen.Badges);
 
-    private void LeaderboardTile_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.Leaderboard);
+    private void LeaderboardTile_Click(object sender, RoutedEventArgs e) =>
+        _shell.Navigate(Screen.Leaderboard);
 
     private void ArenaTile_Click(object sender, RoutedEventArgs e) => _shell.Navigate(Screen.Arena);
 }

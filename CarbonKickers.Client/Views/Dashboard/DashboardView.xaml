@@ -1,198 +1,341 @@
-<UserControl x:Class="CarbonKickers.Client.Views.Dashboard.DashboardView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<UserControl
+    x:Class="CarbonKickers.Client.Views.Dashboard.DashboardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="36,24,36,16">
 
-            <!-- Header -->
-            <TextBlock x:Name="WelcomeText" Text="Welcome back" Style="{StaticResource Text.ScreenTitle}"
-                       TextTrimming="CharacterEllipsis"/>
-            <TextBlock Text="Your season so far, and what to play next." Style="{StaticResource Text.Subtitle}"/>
+            <!--  Header  -->
+            <TextBlock
+                x:Name="WelcomeText"
+                Style="{StaticResource Text.ScreenTitle}"
+                Text="Welcome back"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock Style="{StaticResource Text.Subtitle}" Text="Your season so far, and what to play next." />
 
-            <TextBlock x:Name="DashboardErrorText" Style="{StaticResource Text.Error}" Margin="0,16,0,0"
-                       Visibility="Collapsed"/>
+            <TextBlock
+                x:Name="DashboardErrorText"
+                Margin="0,16,0,0"
+                Style="{StaticResource Text.Error}"
+                Visibility="Collapsed" />
 
-            <!-- Scoreboard: the one arcade band on this screen -->
-            <ContentControl Style="{StaticResource ArcadePanel}" Margin="0,16,0,0" Padding="28,20,28,0">
+            <!--  Scoreboard: the one arcade band on this screen  -->
+            <ContentControl
+                Margin="0,16,0,0"
+                Padding="28,20,28,0"
+                Style="{StaticResource ArcadePanel}">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="36"/>
-                            <ColumnDefinition Width="260"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="36" />
+                            <ColumnDefinition Width="260" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Who you are as a player -->
+                        <!--  Who you are as a player  -->
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="{StaticResource Sprite.Player}" Width="30" Height="42" Margin="0,0,16,0"
-                                       VerticalAlignment="Center" RenderOptions.EdgeMode="Aliased"/>
+                                <Image
+                                    Width="30"
+                                    Height="42"
+                                    Margin="0,0,16,0"
+                                    VerticalAlignment="Center"
+                                    RenderOptions.EdgeMode="Aliased"
+                                    Source="{StaticResource Sprite.Player}" />
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock x:Name="PlayerNameText" Text="Player" Style="{StaticResource Text.GameHeading}"
-                                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0"
-                                                ToolTip="League tiers are a preview until the league back end exists.">
-                                        <Rectangle x:Name="TierDot" Width="10" Height="10" Fill="{StaticResource Brush.Tier.Bronze}"/>
-                                        <TextBlock x:Name="TierText" Text="Bronze league" Margin="8,0,0,0" FontSize="13"
-                                                   FontWeight="SemiBold" Foreground="{StaticResource Brush.GameText}"/>
+                                    <TextBlock
+                                        x:Name="PlayerNameText"
+                                        Style="{StaticResource Text.GameHeading}"
+                                        Text="Player"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                                        <Rectangle
+                                            x:Name="TierDot"
+                                            Width="10"
+                                            Height="10"
+                                            Fill="{StaticResource Brush.Tier.Bronze}" />
+                                        <TextBlock
+                                            x:Name="TierText"
+                                            Margin="8,0,0,0"
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource Brush.GameText}"
+                                            Text="Bronze league" />
                                     </StackPanel>
                                 </StackPanel>
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,22,0,10">
-                                <TextBlock x:Name="GreenXpText" Text="0" Style="{StaticResource Text.Pixel}" FontSize="32"
-                                           LineHeight="36" Foreground="{StaticResource Brush.Gold}"/>
-                                <TextBlock Text="GREEN XP" Style="{StaticResource Text.Pixel}" FontSize="10" Margin="12,0,0,4"
-                                           VerticalAlignment="Bottom" Foreground="{StaticResource Brush.Gold}"/>
+                            <StackPanel Margin="0,22,0,10" Orientation="Horizontal">
+                                <TextBlock
+                                    x:Name="GreenXpText"
+                                    FontSize="32"
+                                    Foreground="{StaticResource Brush.Gold}"
+                                    LineHeight="36"
+                                    Style="{StaticResource Text.Pixel}"
+                                    Text="0" />
+                                <TextBlock
+                                    Margin="12,0,0,4"
+                                    VerticalAlignment="Bottom"
+                                    FontSize="10"
+                                    Foreground="{StaticResource Brush.Gold}"
+                                    Style="{StaticResource Text.Pixel}"
+                                    Text="GREEN XP" />
                             </StackPanel>
 
-                            <ProgressBar x:Name="XpProgress" Style="{StaticResource XpBar}" Value="0"/>
+                            <ProgressBar
+                                x:Name="XpProgress"
+                                Style="{StaticResource XpBar}"
+                                Value="0" />
 
                             <Grid Margin="0,14,0,0">
                                 <TextBlock FontSize="14" Foreground="{StaticResource Brush.GameMuted}">
-                                    <Run x:Name="Co2SavedText" Text="0.00 kg" FontWeight="SemiBold" Foreground="{StaticResource Brush.Peach}"/>
-                                    <Run Text="CO₂ kicked"/>
-                                    <Run Text="  ·  "/>
-                                    <Run x:Name="TotalTripsText" Text="0" FontWeight="SemiBold" Foreground="{StaticResource Brush.Peach}"/>
-                                    <Run Text="trips"/>
+                                    <Run
+                                        x:Name="Co2SavedText"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource Brush.Peach}"
+                                        Text="0.00 kg" />
+                                    <Run Text="CO₂ kicked" />
+                                    <Run Text="  ·  " />
+                                    <Run
+                                        x:Name="TotalTripsText"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource Brush.Peach}"
+                                        Text="0" />
+                                    <Run Text="trips" />
                                 </TextBlock>
-                                <TextBlock x:Name="NextTierText" Style="{StaticResource Text.GameMuted}" FontSize="14"
-                                           HorizontalAlignment="Right" TextWrapping="NoWrap"/>
+                                <TextBlock
+                                    x:Name="NextTierText"
+                                    HorizontalAlignment="Right"
+                                    FontSize="14"
+                                    Style="{StaticResource Text.GameMuted}"
+                                    TextWrapping="NoWrap" />
                             </Grid>
                         </StackPanel>
 
-                        <!-- Divider -->
-                        <Rectangle Grid.Column="1" Width="2" HorizontalAlignment="Center" Fill="{StaticResource Brush.GameDeep}"/>
+                        <!--  Divider  -->
+                        <Rectangle
+                            Grid.Column="1"
+                            Width="2"
+                            HorizontalAlignment="Center"
+                            Fill="{StaticResource Brush.GameDeep}" />
 
-                        <!-- What to do next + your rewards -->
+                        <!--  What to do next + your rewards  -->
                         <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <Button Content="LOG A TRIP" Style="{StaticResource Button.Game}" HorizontalAlignment="Stretch"
-                                    Click="LogTripButton_Click"/>
-                            <Button Content="View trip history" Style="{StaticResource Button.Link}" Margin="0,12,0,0"
-                                    HorizontalAlignment="Center" Foreground="{StaticResource Brush.GameMuted}"
-                                    Click="TripHistoryButton_Click"/>
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Click="LogTripButton_Click"
+                                Content="LOG A TRIP"
+                                Style="{StaticResource Button.Game}" />
+                            <Button
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Center"
+                                Click="TripHistoryButton_Click"
+                                Content="View trip history"
+                                Foreground="{StaticResource Brush.GameMuted}"
+                                Style="{StaticResource Button.Link}" />
 
-                            <Border Style="{StaticResource GameInset}" Margin="0,20,0,0" Padding="12,10">
+                            <Border
+                                Margin="0,20,0,0"
+                                Padding="12,10"
+                                Style="{StaticResource GameInset}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel x:Name="LatestBadgesPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <StackPanel
+                                        x:Name="LatestBadgesPanel"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
                                         <ItemsControl x:Name="LatestBadgesItems" VerticalAlignment="Center">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Horizontal"/>
+                                                    <StackPanel Orientation="Horizontal" />
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Image Source="{StaticResource Sprite.Medal}" Width="24" Height="24" Margin="0,0,4,0"
-                                                           RenderOptions.EdgeMode="Aliased" ToolTip="{Binding Title}"/>
+                                                    <Image
+                                                        Width="24"
+                                                        Height="24"
+                                                        Margin="0,0,4,0"
+                                                        RenderOptions.EdgeMode="Aliased"
+                                                        Source="{StaticResource Sprite.Medal}"
+                                                        ToolTip="{Binding Title}" />
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
-                                        <TextBlock x:Name="BadgesSummaryText" Margin="6,0,0,0" VerticalAlignment="Center" FontSize="13"
-                                                   Foreground="{StaticResource Brush.GameText}"/>
+                                        <TextBlock
+                                            x:Name="BadgesSummaryText"
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Foreground="{StaticResource Brush.GameText}" />
                                     </StackPanel>
-                                    <TextBlock x:Name="NoBadgesText" Text="No badges yet" Style="{StaticResource Text.GameMuted}"
-                                               VerticalAlignment="Center" Visibility="Collapsed"/>
-                                    <Button Grid.Column="1" Content="BADGES" Style="{StaticResource Button.GameGhostSmall}"
-                                            Margin="10,0,0,0" Click="BadgesButton_Click"/>
+                                    <TextBlock
+                                        x:Name="NoBadgesText"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource Text.GameMuted}"
+                                        Text="No badges yet"
+                                        Visibility="Collapsed" />
+                                    <Button
+                                        Grid.Column="1"
+                                        Margin="10,0,0,0"
+                                        Click="BadgesButton_Click"
+                                        Content="BADGES"
+                                        Style="{StaticResource Button.GameGhostSmall}" />
                                 </Grid>
                             </Border>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Scenery strip along the bottom of the band -->
-                    <Grid Height="36" Margin="-28,12,-28,0" ClipToBounds="True">
-                        <Rectangle Height="24" VerticalAlignment="Bottom" Margin="0,0,0,12" Opacity="0.55">
+                    <!--  Scenery strip along the bottom of the band  -->
+                    <Grid
+                        Height="36"
+                        Margin="-28,12,-28,0"
+                        ClipToBounds="True">
+                        <Rectangle
+                            Height="24"
+                            Margin="0,0,0,12"
+                            VerticalAlignment="Bottom"
+                            Opacity="0.55">
                             <Rectangle.Fill>
-                                <ImageBrush ImageSource="{StaticResource Sprite.Skyline}" TileMode="Tile" Stretch="Fill"
-                                            Viewport="0,0,64,24" ViewportUnits="Absolute"/>
+                                <ImageBrush
+                                    ImageSource="{StaticResource Sprite.Skyline}"
+                                    Stretch="Fill"
+                                    TileMode="Tile"
+                                    Viewport="0,0,64,24"
+                                    ViewportUnits="Absolute" />
                             </Rectangle.Fill>
                         </Rectangle>
-                        <Rectangle Height="14" VerticalAlignment="Bottom" Fill="{StaticResource Brush.GameDeep}"/>
-                        <Rectangle Height="3" VerticalAlignment="Bottom" Margin="0,0,0,5">
+                        <Rectangle
+                            Height="14"
+                            VerticalAlignment="Bottom"
+                            Fill="{StaticResource Brush.GameDeep}" />
+                        <Rectangle
+                            Height="3"
+                            Margin="0,0,0,5"
+                            VerticalAlignment="Bottom">
                             <Rectangle.Fill>
-                                <DrawingBrush TileMode="Tile" Viewport="0,0,24,3" ViewportUnits="Absolute">
+                                <DrawingBrush
+                                    TileMode="Tile"
+                                    Viewport="0,0,24,3"
+                                    ViewportUnits="Absolute">
                                     <DrawingBrush.Drawing>
                                         <DrawingGroup>
-                                            <GeometryDrawing Brush="Transparent" Geometry="M0,0 H24 V3 H0 Z"/>
-                                            <GeometryDrawing Brush="#73F8D5B9" Geometry="M0,0 H12 V3 H0 Z"/>
+                                            <GeometryDrawing Brush="Transparent" Geometry="M0,0 H24 V3 H0 Z" />
+                                            <GeometryDrawing Brush="#73F8D5B9" Geometry="M0,0 H12 V3 H0 Z" />
                                         </DrawingGroup>
                                     </DrawingBrush.Drawing>
                                 </DrawingBrush>
                             </Rectangle.Fill>
                         </Rectangle>
-                        <Image Source="{StaticResource Sprite.Tree}" Width="20" Height="22" HorizontalAlignment="Right"
-                               VerticalAlignment="Bottom" Margin="0,0,90,12" RenderOptions.EdgeMode="Aliased"/>
-                        <Image Source="{StaticResource Sprite.Bike}" Width="44" Height="24" HorizontalAlignment="Left"
-                               VerticalAlignment="Bottom" Margin="64,0,0,10" RenderOptions.EdgeMode="Aliased"/>
+                        <Image
+                            Width="20"
+                            Height="22"
+                            Margin="0,0,90,12"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            RenderOptions.EdgeMode="Aliased"
+                            Source="{StaticResource Sprite.Tree}" />
+                        <Image
+                            Width="44"
+                            Height="24"
+                            Margin="64,0,0,10"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            RenderOptions.EdgeMode="Aliased"
+                            Source="{StaticResource Sprite.Bike}" />
                     </Grid>
                 </StackPanel>
             </ContentControl>
 
-            <!-- Calm row: progress and competition -->
+            <!--  Calm row: progress and competition  -->
             <Grid Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Style="{StaticResource Card}" Padding="22,20">
+                <Border Padding="22,20" Style="{StaticResource Card}">
                     <DockPanel>
                         <Grid DockPanel.Dock="Top">
-                            <TextBlock Text="CO₂ kicked, last 7 days" Style="{StaticResource Text.Heading}"/>
-                            <TextBlock x:Name="WeekTotalText" HorizontalAlignment="Right" FontSize="13"
-                                       Foreground="{StaticResource Brush.TextMuted}"/>
+                            <TextBlock Style="{StaticResource Text.Heading}" Text="CO₂ kicked, last 7 days" />
+                            <TextBlock
+                                x:Name="WeekTotalText"
+                                HorizontalAlignment="Right"
+                                FontSize="13"
+                                Foreground="{StaticResource Brush.TextMuted}" />
                         </Grid>
 
-                        <!-- Fills the card's height; bars are a share of it -->
+                        <!--  Fills the card's height; bars are a share of it  -->
                         <Grid MinHeight="190" Margin="0,22,0,0">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Rectangle Height="1" VerticalAlignment="Bottom" Fill="{StaticResource Brush.Border}"/>
+                            <Rectangle
+                                Height="1"
+                                VerticalAlignment="Bottom"
+                                Fill="{StaticResource Brush.Border}" />
                             <ItemsControl x:Name="DailyImpactItems">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <UniformGrid Rows="1"/>
+                                        <UniformGrid Rows="1" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Background="Transparent" ToolTip="{Binding Tooltip}">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="{Binding BarRest}"/>
-                                                <RowDefinition Height="{Binding BarFill}"/>
+                                                <RowDefinition Height="{Binding BarRest}" />
+                                                <RowDefinition Height="{Binding BarFill}" />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding ValueLabel}" FontSize="12" FontWeight="SemiBold"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,6"
-                                                       Foreground="{StaticResource Brush.Text}"
-                                                       Visibility="{Binding ValueVisibility}"/>
-                                            <Rectangle Grid.Row="1" Width="24" Fill="{StaticResource Brush.Chart}"/>
+                                            <TextBlock
+                                                Margin="0,0,0,6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Bottom"
+                                                FontSize="12"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource Brush.Text}"
+                                                Text="{Binding ValueLabel}"
+                                                Visibility="{Binding ValueVisibility}" />
+                                            <Rectangle
+                                                Grid.Row="1"
+                                                Width="24"
+                                                Fill="{StaticResource Brush.Chart}" />
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock x:Name="EmptyWeekText" Text="No trips in the last 7 days. Log one to get the bars moving."
-                                       Style="{StaticResource Text.Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Visibility="Collapsed"/>
-                            <ItemsControl x:Name="DayLabelItems" Grid.Row="1" Margin="0,8,0,0" IsTabStop="False"
-                                          ItemsSource="{Binding ItemsSource, ElementName=DailyImpactItems}">
+                            <TextBlock
+                                x:Name="EmptyWeekText"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource Text.Muted}"
+                                Text="No trips in the last 7 days. Log one to get the bars moving."
+                                Visibility="Collapsed" />
+                            <ItemsControl
+                                x:Name="DayLabelItems"
+                                Grid.Row="1"
+                                Margin="0,8,0,0"
+                                IsTabStop="False"
+                                ItemsSource="{Binding ItemsSource, ElementName=DailyImpactItems}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <UniformGrid Rows="1"/>
+                                        <UniformGrid Rows="1" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding DayLabel}" FontSize="12" HorizontalAlignment="Center"
-                                                   Foreground="{StaticResource Brush.TextMuted}"/>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            FontSize="12"
+                                            Foreground="{StaticResource Brush.TextMuted}"
+                                            Text="{Binding DayLabel}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -200,72 +343,109 @@
                     </DockPanel>
                 </Border>
 
-                <!-- Compete: everything from the activity diagram's competition branch -->
-                <Border Grid.Column="2" Style="{StaticResource Card}" Padding="22,20">
+                <!--  Compete: everything from the activity diagram's competition branch  -->
+                <Border
+                    Grid.Column="2"
+                    Padding="22,20"
+                    Style="{StaticResource Card}">
                     <StackPanel>
                         <Grid>
-                            <TextBlock Text="Compete" Style="{StaticResource Text.Heading}" VerticalAlignment="Center"/>
-                            <Border Style="{StaticResource PreviewTag}" HorizontalAlignment="Right">
-                                <TextBlock Text="Preview · sample data" FontSize="11" Foreground="{StaticResource Brush.Danger}"/>
-                            </Border>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Style="{StaticResource Text.Heading}"
+                                Text="Compete" />
+
                         </Grid>
 
-                        <!-- Status line with a compact join action -->
+                        <!--  Status line with a compact join action  -->
                         <Grid Margin="0,10,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="CompeteStatusText" Style="{StaticResource Text.Muted}" VerticalAlignment="Center"/>
-                            <Button x:Name="JoinCompetitionButton" Grid.Column="1" Content="Join" Style="{StaticResource Button.Primary}"
-                                    Padding="16,6" FontSize="13" Margin="12,0,0,0" VerticalAlignment="Center"
-                                    Click="JoinCompetitionButton_Click"/>
+                            <TextBlock
+                                x:Name="CompeteStatusText"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource Text.Muted}" />
                         </Grid>
 
-                        <Button Style="{StaticResource Button.ListRow}" Click="LeaderboardTile_Click">
+                        <Button Click="LeaderboardTile_Click" Style="{StaticResource Button.ListRow}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Path Data="{StaticResource Icon.Leaderboard}" Width="18" Height="18" Stretch="Uniform"
-                                      Fill="{StaticResource Brush.Primary}" RenderOptions.EdgeMode="Aliased" VerticalAlignment="Center"/>
+                                <Path
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Data="{StaticResource Icon.Leaderboard}"
+                                    Fill="{StaticResource Brush.Primary}"
+                                    RenderOptions.EdgeMode="Aliased"
+                                    Stretch="Uniform" />
                                 <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                                    <TextBlock Text="View leaderboard" FontSize="14" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="LeaderboardTileText" FontSize="12" Margin="0,2,0,0"
-                                               Foreground="{StaticResource Brush.TextMuted}"/>
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Text="View leaderboard" />
+                                    <TextBlock
+                                        x:Name="LeaderboardTileText"
+                                        Margin="0,2,0,0"
+                                        FontSize="12"
+                                        Foreground="{StaticResource Brush.TextMuted}" />
                                 </StackPanel>
                             </Grid>
                         </Button>
 
-                        <Button Style="{StaticResource Button.ListRow}" Click="LeagueTile_Click">
+                        <Button Click="LeagueTile_Click" Style="{StaticResource Button.ListRow}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Path Data="{StaticResource Icon.League}" Width="18" Height="18" Stretch="Uniform"
-                                      Fill="{StaticResource Brush.Primary}" RenderOptions.EdgeMode="Aliased" VerticalAlignment="Center"/>
+                                <Path
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Data="{StaticResource Icon.League}"
+                                    Fill="{StaticResource Brush.Primary}"
+                                    RenderOptions.EdgeMode="Aliased"
+                                    Stretch="Uniform" />
                                 <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                                    <TextBlock x:Name="LeagueTileTitle" Text="Join weekly league" FontSize="14" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="LeagueTileText" FontSize="12" Margin="0,2,0,0"
-                                               Foreground="{StaticResource Brush.TextMuted}"/>
+                                    <TextBlock
+                                        x:Name="LeagueTileTitle"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Text="Join weekly league" />
+                                    <TextBlock
+                                        x:Name="LeagueTileText"
+                                        Margin="0,2,0,0"
+                                        FontSize="12"
+                                        Foreground="{StaticResource Brush.TextMuted}" />
                                 </StackPanel>
                             </Grid>
                         </Button>
 
-                        <Button Style="{StaticResource Button.ListRow}" Click="ArenaTile_Click">
+                        <Button Click="ArenaTile_Click" Style="{StaticResource Button.ListRow}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Path Data="{StaticResource Icon.Arena}" Width="18" Height="18" Stretch="Uniform"
-                                      Fill="{StaticResource Brush.Primary}" RenderOptions.EdgeMode="Aliased" VerticalAlignment="Center"/>
+                                <Path
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center"
+                                    Data="{StaticResource Icon.Arena}"
+                                    Fill="{StaticResource Brush.Primary}"
+                                    RenderOptions.EdgeMode="Aliased"
+                                    Stretch="Uniform" />
                                 <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                                    <TextBlock Text="Challenge a friend" FontSize="14" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="ArenaTileText" FontSize="12" Margin="0,2,0,0"
-                                               Foreground="{StaticResource Brush.TextMuted}"/>
+                                    <TextBlock
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Text="Challenge a friend" />
+                                    <TextBlock
+                                        x:Name="ArenaTileText"
+                                        Margin="0,2,0,0"
+                                        FontSize="12"
+                                        Foreground="{StaticResource Brush.TextMuted}" />
                                 </StackPanel>
                             </Grid>
                         </Button>
