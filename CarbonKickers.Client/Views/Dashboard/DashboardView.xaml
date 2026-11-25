@@ -13,6 +13,11 @@
             <TextBlock x:Name="DashboardErrorText" Style="{StaticResource Text.Error}" Margin="0,16,0,0"
                        Visibility="Collapsed"/>
 
+            <TextBlock x:Name="LoadingText" Style="{StaticResource Text.Loading}" Margin="0,28,0,0"/>
+
+            <!-- Everything below stays hidden until the dashboard data arrives, so no zeros flash up -->
+            <StackPanel x:Name="DashboardBody" Visibility="Collapsed">
+
             <!-- Scoreboard: the one arcade band on this screen -->
             <ContentControl Style="{StaticResource ArcadePanel}" Margin="0,16,0,0" Padding="28,20,28,0">
                 <StackPanel>
@@ -272,6 +277,7 @@
                     </StackPanel>
                 </Border>
             </Grid>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -20,6 +20,7 @@
 
         <Grid Grid.Row="1">
             <DataGrid x:Name="TripsDataGrid"
+                      Visibility="Collapsed"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       CanUserAddRows="False">
@@ -83,6 +84,9 @@
                 <Button Content="LOG YOUR FIRST TRIP" Style="{StaticResource Button.Game}" HorizontalAlignment="Center"
                         Click="LogTripButton_Click"/>
             </StackPanel>
+
+            <TextBlock x:Name="LoadingText" Style="{StaticResource Text.Loading}" HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
 
             <TextBlock x:Name="ErrorText" Style="{StaticResource Text.Error}" HorizontalAlignment="Center"
                        VerticalAlignment="Center" Visibility="Collapsed"/>
