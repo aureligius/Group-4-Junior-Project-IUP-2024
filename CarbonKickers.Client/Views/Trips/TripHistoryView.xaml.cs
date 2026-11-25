@@ -35,6 +35,8 @@ public partial class TripHistoryView : UserControl
                 return;
             }
 
+            TripsDataGrid.Visibility = Visibility.Visible;
+
             SummaryText.Text =
                 $"{trips.Count} trips · {trips.Sum(t => t.DistanceKm):F1} km · "
                 + $"{trips.Sum(t => t.Co2SavedKg):F2} kg CO₂ kicked · {trips.Sum(t => t.XpEarned):N0} XP earned";
@@ -46,6 +48,10 @@ public partial class TripHistoryView : UserControl
         catch (Exception)
         {
             ShowError("Unable to load trip history. Please log in again.");
+        }
+        finally
+        {
+            LoadingText.Visibility = Visibility.Collapsed;
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Net.Http;
 using CarbonKickers.Client.Services;
 using CarbonKickers.Shared.Contracts;
@@ -15,21 +16,45 @@ public partial class LoginWindow : Window
         InitializeComponent();
     }
 
-    private void ShowRegisterButton_Click(object sender, RoutedEventArgs e)
+    // Opens the login form with a note on top, e.g. after the session expired
+    public LoginWindow(string notice)
+        : this()
+    {
+        ShowLoginError(notice);
+    }
+
+    private void ShowRegisterButton_Click(object sender, RoutedEventArgs e) => ShowRegisterForm();
+
+    private void ShowLoginButton_Click(object sender, RoutedEventArgs e) => ShowLoginForm();
+
+    private void ShowRegisterForm()
     {
         LoginPanel.Visibility = Visibility.Collapsed;
         RegisterPanel.Visibility = Visibility.Visible;
+        LoginSuccessText.Visibility = Visibility.Collapsed;
+
+        // Enter submits the form that is on screen
+        LoginButton.IsDefault = false;
+        RegisterButton.IsDefault = true;
+
+        RegisterUsernameTextBox.Focus();
     }
 
-    private void ShowLoginButton_Click(object sender, RoutedEventArgs e)
+    private void ShowLoginForm()
     {
         RegisterPanel.Visibility = Visibility.Collapsed;
         LoginPanel.Visibility = Visibility.Visible;
+
+        RegisterButton.IsDefault = false;
+        LoginButton.IsDefault = true;
+
+        LoginEmailTextBox.Focus();
     }
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         LoginErrorText.Visibility = Visibility.Collapsed;
+        LoginSuccessText.Visibility = Visibility.Collapsed;
 
         if (
             string.IsNullOrWhiteSpace(LoginEmailTextBox.Text)
@@ -39,6 +64,8 @@ public partial class LoginWindow : Window
             ShowLoginError("Email and password are required.");
             return;
         }
+
+        SetBusy(LoginButton, "LOGGING IN...");
 
         try
         {
@@ -68,6 +95,15 @@ public partial class LoginWindow : Window
         {
             ShowLoginError("The API request timed out.");
         }
+        catch (InvalidOperationException exception)
+        {
+            // A server-side failure (not a wrong password); LoginAsync puts the reason in the message
+            ShowLoginError(exception.Message);
+        }
+        finally
+        {
+            ClearBusy(LoginButton, "LOG IN");
+        }
     }
 
     private async void RegisterButton_Click(object sender, RoutedEventArgs e)
@@ -84,6 +120,8 @@ public partial class LoginWindow : Window
             return;
         }
 
+        SetBusy(RegisterButton, "CREATING ACCOUNT...");
+
         try
         {
             var request = new RegisterRequest(
@@ -92,28 +130,29 @@ public partial class LoginWindow : Window
                 RegisterPasswordBox.Password
             );
 
-            var succeeded = await _apiClient.RegisterAsync(request);
+            var error = await _apiClient.RegisterAsync(request);
 
-            if (!succeeded)
+            if (error is not null)
             {
-                ShowRegisterError(
-                    "Registration failed. Email or username may already be registered."
-                );
+                ShowRegisterError(error);
                 return;
             }
 
-            MessageBox.Show(
-                "Account created. You can now log in.",
-                "Carbon Kickers",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
+            // Hand the new player straight to the login form with their email filled in
+            var email = request.Email;
 
             RegisterUsernameTextBox.Clear();
             RegisterEmailTextBox.Clear();
             RegisterPasswordBox.Clear();
 
-            ShowLoginButton_Click(sender, e);
+            ShowLoginForm();
+
+            LoginErrorText.Visibility = Visibility.Collapsed;
+            LoginEmailTextBox.Text = email;
+            LoginPasswordBox.Clear();
+            LoginSuccessText.Text = "Account created. Enter your password to start playing.";
+            LoginSuccessText.Visibility = Visibility.Visible;
+            LoginPasswordBox.Focus();
         }
         catch (HttpRequestException)
         {
@@ -123,6 +162,23 @@ public partial class LoginWindow : Window
         {
             ShowRegisterError("The API request timed out.");
         }
+        finally
+        {
+            ClearBusy(RegisterButton, "CREATE ACCOUNT");
+        }
+    }
+
+    // Disabling the button stops double-clicks from sending the request twice
+    private static void SetBusy(Button button, string busyText)
+    {
+        button.IsEnabled = false;
+        button.Content = busyText;
+    }
+
+    private static void ClearBusy(Button button, string idleText)
+    {
+        button.IsEnabled = true;
+        button.Content = idleText;
     }
 
     private void ShowLoginError(string message)

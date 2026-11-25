@@ -24,6 +24,17 @@ public partial class MainWindow : Window, IShell
         InitializeComponent();
 
         Loaded += (_, _) => Navigate(Screen.Dashboard);
+
+        Api.SessionExpired += Api_SessionExpired;
+        Closed += (_, _) => Api.SessionExpired -= Api_SessionExpired;
+    }
+
+    // The login token lasts 8 hours; when the API rejects it, go back to login instead of
+    // leaving every screen showing a load error
+    private void Api_SessionExpired(object? sender, EventArgs e)
+    {
+        new LoginWindow("Your session has expired. Please log in again.").Show();
+        Close();
     }
 
     public ApiClient Api { get; }

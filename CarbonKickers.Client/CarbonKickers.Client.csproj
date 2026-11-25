@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Taskbar, desktop shortcut and .exe icon -->
+    <ApplicationIcon>Assets\Logo\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +17,8 @@
   <ItemGroup>
     <!-- Press Start 2P (SIL Open Font License, see Assets/Fonts/OFL.txt) -->
     <Resource Include="Assets\Fonts\PressStart2P-Regular.ttf" />
+    <!-- Window title-bar icon (referenced by pack URI in MainWindow and LoginWindow) -->
+    <Resource Include="Assets\Logo\app.ico" />
   </ItemGroup>
 
 </Project>

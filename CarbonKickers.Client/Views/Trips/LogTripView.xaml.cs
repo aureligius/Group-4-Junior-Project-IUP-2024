@@ -57,6 +57,11 @@ public partial class LogTripView : UserControl
             ShowError("Cannot load transport modes. Start the API first.");
             SaveTripButton.IsEnabled = false;
         }
+        catch (TaskCanceledException)
+        {
+            ShowError("Loading transport modes timed out. Open this screen again to retry.");
+            SaveTripButton.IsEnabled = false;
+        }
     }
 
     private async void OriginTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -269,6 +274,11 @@ public partial class LogTripView : UserControl
         catch (HttpRequestException)
         {
             ShowError("Cannot reach the API. Verify that CarbonKickers.Api is running.");
+        }
+        catch (TaskCanceledException)
+        {
+            // Unlike the search boxes, nothing cancels a save on purpose, so this is the 30 s timeout
+            ShowError("Saving took too long. Check your trip history before trying again, it may have been saved.");
         }
         finally
         {

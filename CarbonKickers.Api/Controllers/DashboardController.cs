@@ -22,8 +22,15 @@ public sealed class DashboardController : ControllerBase
     [ProducesResponseType(
         typeof(DashboardResponse),
         StatusCodes.Status200OK)]
-    public async Task<ActionResult<DashboardResponse>> Get()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<DashboardResponse>> Get([FromQuery] int utcOffsetMinutes = 0)
     {
+        // Real-world offsets range from UTC-12:00 to UTC+14:00.
+        if (utcOffsetMinutes is < -720 or > 840)
+        {
+            return BadRequest(new { message = "Invalid UTC offset." });
+        }
+
         var userIdClaim = User.FindFirstValue(
             ClaimTypes.NameIdentifier);
 
@@ -34,7 +41,7 @@ public sealed class DashboardController : ControllerBase
 
         try
         {
-            return Ok(await _dashboardService.GetAsync(userId));
+            return Ok(await _dashboardService.GetAsync(userId, utcOffsetMinutes));
         }
         catch (KeyNotFoundException exception)
         {
