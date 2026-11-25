@@ -68,7 +68,12 @@ public sealed class ApiClient
 
     public async Task<DashboardResponse> GetDashboardAsync()
     {
-        return await _httpClient.GetFromJsonAsync<DashboardResponse>("api/dashboard")
+        // Lets the API group trips by this machine's calendar days (e.g. 420 for UTC+7).
+        var utcOffsetMinutes = (int)TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalMinutes;
+
+        return await _httpClient.GetFromJsonAsync<DashboardResponse>(
+                $"api/dashboard?utcOffsetMinutes={utcOffsetMinutes}"
+            )
             ?? throw new InvalidOperationException(
                 "The API returned an invalid dashboard response."
             );
@@ -76,7 +81,11 @@ public sealed class ApiClient
 
     public async Task<IReadOnlyList<TripHistoryResponse>> GetTripsAsync()
     {
-        return await _httpClient.GetFromJsonAsync<List<TripHistoryResponse>>("api/trips") ?? [];
+        var trips =
+            await _httpClient.GetFromJsonAsync<List<TripHistoryResponse>>("api/trips") ?? [];
+
+        // The API sends UTC timestamps; show them in the user's local time.
+        return trips.Select(trip => trip with { LoggedAt = trip.LoggedAt.ToLocalTime() }).ToList();
     }
 
     public async Task<IReadOnlyList<TransportModeResponse>> GetTransportModesAsync()
