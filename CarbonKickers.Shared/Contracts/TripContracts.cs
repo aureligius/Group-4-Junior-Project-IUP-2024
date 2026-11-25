@@ -43,5 +43,6 @@ public sealed record CreateTripResponse(
     double BaselineCo2EmittedKg,
     double Co2SavedKg,
     int XpEarned,
+    IReadOnlyList<BadgeResponse> NewlyUnlockedBadges,
     DateTime LoggedAt
 );

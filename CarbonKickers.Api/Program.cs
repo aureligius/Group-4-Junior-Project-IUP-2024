@@ -1,15 +1,12 @@
 using System.Text;
-
+using CarbonKickers.Application.Badges;
+using CarbonKickers.Application.Dashboard;
 using CarbonKickers.Application.Locations;
 using CarbonKickers.Application.Trips;
 using CarbonKickers.Application.Users;
-using CarbonKickers.Application.Dashboard;
-
 using CarbonKickers.Domain.Interfaces;
-
 using CarbonKickers.Infrastructure.Data;
 using CarbonKickers.Infrastructure.Services;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -48,15 +45,11 @@ builder.Services.AddHttpClient<IMapsService, GoogleMapsService>(client =>
     client.Timeout = TimeSpan.FromSeconds(15);
 });
 
-
-
 builder.Services.AddScoped<IEmissionService, ClimatiqEmissionService>();
+builder.Services.AddScoped<IBadgeService, BadgeService>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ITripHistoryService, TripHistoryService>();
-
-
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

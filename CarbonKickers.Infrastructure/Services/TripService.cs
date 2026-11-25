@@ -1,3 +1,4 @@
+using CarbonKickers.Application.Badges;
 using CarbonKickers.Application.Trips;
 using CarbonKickers.Domain.Entities;
 using CarbonKickers.Domain.Interfaces;
@@ -12,12 +13,19 @@ public sealed class TripService : ITripService
     private readonly AppDbContext _db;
     private readonly IMapsService _mapsService;
     private readonly IEmissionService _emissionService;
+    private readonly IBadgeService _badgeService;
 
-    public TripService(AppDbContext db, IMapsService mapsService, IEmissionService emissionService)
+    public TripService(
+        AppDbContext db,
+        IMapsService mapsService,
+        IEmissionService emissionService,
+        IBadgeService badgeService
+    )
     {
         _db = db;
         _mapsService = mapsService;
         _emissionService = emissionService;
+        _badgeService = badgeService;
     }
 
     public async Task<CreateTripResponse> CreateAsync(Guid userId, CreateTripRequest request)
@@ -69,6 +77,8 @@ public sealed class TripService : ITripService
         user.AddCo2Saved(trip.Co2SavedKg);
         user.AddXp(xpEarned);
 
+        var newlyUnlockedBadges = await _badgeService.AwardEligibleBadgesAsync(user);
+
         _db.TripLogs.Add(trip);
         await _db.SaveChangesAsync();
 
@@ -88,6 +98,7 @@ public sealed class TripService : ITripService
             trip.BaselineCo2EmittedKg,
             trip.Co2SavedKg,
             xpEarned,
+            newlyUnlockedBadges,
             trip.LoggedAt
         );
     }

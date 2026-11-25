@@ -91,4 +91,9 @@ public sealed class ApiClient
     }
 
     private sealed record ApiErrorResponse(string? Message);
+
+    public async Task<IReadOnlyList<BadgeResponse>> GetBadgesAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<BadgeResponse>>("api/badges/me") ?? [];
+    }
 }

@@ -252,6 +252,21 @@ public partial class LogTripWindow : Window
                 estimates.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             ResultBorder.Visibility = Visibility.Visible;
+
+            if (result.NewlyUnlockedBadges.Count > 0)
+            {
+                var badgeNames = string.Join(
+                    ", ",
+                    result.NewlyUnlockedBadges.Select(badge => badge.Title)
+                );
+
+                MessageBox.Show(
+                    $"Badge unlocked: {badgeNames}",
+                    "Carbon Kickers",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
+            }
         }
         catch (InvalidOperationException exception)
         {
