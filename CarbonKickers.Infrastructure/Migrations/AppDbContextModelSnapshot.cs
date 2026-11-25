@@ -161,6 +161,11 @@ namespace CarbonKickers.Infrastructure.Migrations
                     b.Property<double>("EmissionFactorPerKm")
                         .HasColumnType("double precision");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("ModeName")
                         .IsRequired()
                         .HasMaxLength(50)

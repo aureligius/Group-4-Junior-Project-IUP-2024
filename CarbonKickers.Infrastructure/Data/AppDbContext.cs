@@ -36,6 +36,7 @@ public class AppDbContext : DbContext
             entity.HasKey(mode => mode.Id);
 
             entity.Property(mode => mode.ModeName).HasMaxLength(50).IsRequired();
+            entity.Property(mode => mode.IsActive).HasDefaultValue(true).IsRequired();
 
             entity.HasIndex(mode => mode.ModeName).IsUnique();
         });
