@@ -2,7 +2,7 @@
 using System.Net.Http;
 using CarbonKickers.Client.Services;
 using CarbonKickers.Shared.Contracts;
-using CarbonKickers.Client.Views.Dashboard;
+using CarbonKickers.Client.Views.Shell;
 
 namespace CarbonKickers.Client.Views.Authentication;
 
@@ -55,8 +55,8 @@ public partial class LoginWindow : Window
                 return;
             }
 
-            var dashboardWindow = new DashboardWindow(_apiClient);
-            dashboardWindow.Show();
+            var mainWindow = new MainWindow(_apiClient);
+            mainWindow.Show();
 
             Close();
         }

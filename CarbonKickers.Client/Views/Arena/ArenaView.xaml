@@ -1,0 +1,193 @@
+<UserControl x:Class="CarbonKickers.Client.Views.Arena.ArenaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <!-- Head-to-head bar: the fill takes the bar's Foreground -->
+        <Style x:Key="VsBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border Background="{StaticResource Brush.Game}">
+                            <Grid>
+                                <Border x:Name="PART_Track"/>
+                                <Border x:Name="PART_Indicator" HorizontalAlignment="Left" Background="{TemplateBinding Foreground}"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="36,32,36,36">
+            <Grid>
+                <TextBlock Text="THE ARENA" Style="{StaticResource Text.ScreenTitle}"/>
+                <Border Style="{StaticResource PreviewTag}" HorizontalAlignment="Right">
+                    <TextBlock Text="Preview · sample data" FontSize="12" Foreground="{StaticResource Brush.Danger}"/>
+                </Border>
+            </Grid>
+            <TextBlock Text="Head-to-head battles: whoever kicks more CO₂ before the time runs out wins."
+                       Style="{StaticResource Text.Subtitle}"/>
+
+            <Grid Margin="0,24,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <!-- Invites -->
+                    <ContentControl x:Name="IncomingPanel" Style="{StaticResource ArcadePanel}" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="CHALLENGES FOR YOU" Style="{StaticResource Text.GameHeading}"/>
+                            <ItemsControl x:Name="IncomingItems" Margin="0,16,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource GameInset}" Margin="0,0,0,6">
+                                            <Grid>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock FontSize="14">
+                                                        <Run Text="{Binding Opponent, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                        <Run Text="challenged you"/>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Days, StringFormat='{}{0}-day battle'}"
+                                                               Style="{StaticResource Text.GameMuted}" Margin="0,4,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                    <Button Content="ACCEPT" Style="{StaticResource Button.GameSmall}"
+                                                            Tag="{Binding}" Click="AcceptButton_Click"/>
+                                                    <Button Content="DECLINE" Style="{StaticResource Button.GameGhostSmall}"
+                                                            Margin="8,0,0,0" Tag="{Binding}" Click="DeclineButton_Click"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ContentControl>
+
+                    <!-- Battles in progress -->
+                    <ContentControl Style="{StaticResource ArcadePanel}" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="BATTLES IN PROGRESS" Style="{StaticResource Text.GameHeading}"/>
+                            <TextBlock x:Name="NoBattlesText" Text="No battles right now. Challenge a friend to start one."
+                                       Style="{StaticResource Text.GameMuted}" Margin="0,16,0,0" Visibility="Collapsed"/>
+                            <ItemsControl x:Name="ActiveItems" Margin="0,16,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource GameInset}" Margin="0,0,0,6" Padding="16,14">
+                                            <StackPanel>
+                                                <Grid>
+                                                    <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Title}"/>
+                                                    <TextBlock Text="{Binding StatusText}" HorizontalAlignment="Right" FontSize="12"
+                                                               Foreground="{Binding StatusBrush}"/>
+                                                </Grid>
+                                                <Grid Margin="0,12,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="70"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition/>
+                                                        <RowDefinition Height="8"/>
+                                                        <RowDefinition/>
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Text="You" FontSize="13" VerticalAlignment="Center"/>
+                                                    <ProgressBar Grid.Column="1" Style="{StaticResource VsBar}" Value="{Binding MinePercent, Mode=OneWay}"
+                                                                 Foreground="{StaticResource Brush.Gold}"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding MineText}" FontSize="13" HorizontalAlignment="Right"/>
+                                                    <TextBlock Grid.Row="2" Text="{Binding Opponent}" FontSize="13" VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis" Foreground="{StaticResource Brush.GameMuted}"/>
+                                                    <ProgressBar Grid.Row="2" Grid.Column="1" Style="{StaticResource VsBar}"
+                                                                 Value="{Binding TheirsPercent, Mode=OneWay}" Foreground="{StaticResource Brush.Coral}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding TheirsText}" FontSize="13"
+                                                               HorizontalAlignment="Right" Foreground="{StaticResource Brush.GameMuted}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ContentControl>
+
+                    <!-- Results -->
+                    <ContentControl Style="{StaticResource ArcadePanel}">
+                        <StackPanel>
+                            <TextBlock Text="PAST BATTLES" Style="{StaticResource Text.GameHeading}"/>
+                            <ItemsControl x:Name="PastItems" Margin="0,16,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource GameInset}" Margin="0,0,0,6">
+                                            <Grid>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding DetailText}" Style="{StaticResource Text.GameMuted}"
+                                                               Margin="0,4,0,0"/>
+                                                </StackPanel>
+                                                <Border Style="{StaticResource Pill}" HorizontalAlignment="Right"
+                                                        Background="{Binding ResultBackground}">
+                                                    <TextBlock Text="{Binding ResultText}" Style="{StaticResource Text.Pixel}" FontSize="9"
+                                                               Foreground="{StaticResource Brush.GameDeep}"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ContentControl>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <!-- New challenge -->
+                    <ContentControl Style="{StaticResource ArcadePanel}" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="CHALLENGE A FRIEND" Style="{StaticResource Text.GameHeading}"/>
+                            <TextBlock Text="Friend" FontSize="13" FontWeight="SemiBold" Margin="0,18,0,6"/>
+                            <ComboBox x:Name="OpponentComboBox"/>
+                            <TextBlock Text="Battle length" FontSize="13" FontWeight="SemiBold" Margin="0,14,0,6"/>
+                            <ComboBox x:Name="LengthComboBox" SelectedIndex="1">
+                                <ComboBoxItem Content="3 days" Tag="3"/>
+                                <ComboBoxItem Content="1 week" Tag="7"/>
+                                <ComboBoxItem Content="2 weeks" Tag="14"/>
+                            </ComboBox>
+                            <Button x:Name="SendChallengeButton" Content="SEND CHALLENGE" Style="{StaticResource Button.Game}"
+                                    HorizontalAlignment="Stretch" Margin="0,22,0,0" Click="SendChallengeButton_Click"/>
+                            <TextBlock x:Name="SendStatusText" Style="{StaticResource Text.GameMuted}" Margin="0,12,0,0"
+                                       Visibility="Collapsed"/>
+                        </StackPanel>
+                    </ContentControl>
+
+                    <!-- Sent challenges -->
+                    <ContentControl x:Name="WaitingPanel" Style="{StaticResource ArcadePanel}">
+                        <StackPanel>
+                            <TextBlock Text="AWAITING REPLY" Style="{StaticResource Text.GameHeading}"/>
+                            <ItemsControl x:Name="WaitingItems" Margin="0,16,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource GameInset}" Margin="0,0,0,6">
+                                            <Grid>
+                                                <TextBlock Text="{Binding Opponent}" FontSize="14" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Days, StringFormat='{}{0}-day battle'}" HorizontalAlignment="Right"
+                                                           FontSize="12" VerticalAlignment="Center"
+                                                           Foreground="{StaticResource Brush.GameMuted}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ContentControl>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

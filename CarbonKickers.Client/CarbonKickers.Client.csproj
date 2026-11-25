@@ -12,4 +12,9 @@
     <ProjectReference Include="..\CarbonKickers.Shared\CarbonKickers.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Press Start 2P (SIL Open Font License, see Assets/Fonts/OFL.txt) -->
+    <Resource Include="Assets\Fonts\PressStart2P-Regular.ttf" />
+  </ItemGroup>
+
 </Project>

@@ -2,112 +2,128 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Carbon Kickers"
-        Height="560"
-        Width="430"
+        Width="1200"
+        Height="760"
+        MinWidth="1024"
+        MinHeight="700"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
+        Background="{StaticResource Brush.Ground}"
+        FontFamily="{StaticResource Font.Body}"
+        UseLayoutRounding="True">
 
-    <Grid Background="#094A44">
-        <Border Width="350"
-                Padding="30"
-                Background="White"
-                CornerRadius="16"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center">
+    <Grid Background="{StaticResource Brush.Ground}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="520"/>
+        </Grid.ColumnDefinitions>
 
+        <!-- Title screen -->
+        <Grid Background="{StaticResource Brush.Game}" ClipToBounds="True">
+            <Rectangle Fill="{StaticResource Brush.Scanlines}" IsHitTestVisible="False"/>
+
+            <StackPanel Margin="64,72,48,0" VerticalAlignment="Top">
+                <TextBlock Text="CARBON" Style="{StaticResource Text.Pixel}" FontSize="40" LineHeight="48"
+                           Foreground="{StaticResource Brush.Peach}"/>
+                <TextBlock Text="KICKERS" Style="{StaticResource Text.Pixel}" FontSize="40" LineHeight="48" Margin="0,8,0,0"
+                           Foreground="{StaticResource Brush.Coral}"/>
+                <TextBlock Text="Turn sustainability into a sport." FontSize="20" Margin="0,32,0,0"
+                           Foreground="{StaticResource Brush.GameText}"/>
+                <TextBlock FontSize="15" Margin="0,12,0,0" MaxWidth="440" HorizontalAlignment="Left" TextWrapping="Wrap"
+                           Foreground="{StaticResource Brush.GameMuted}"
+                           Text="Log your trips, kick CO₂ out of the atmosphere compared to the ride you'd normally take, and climb from Bronze to Diamond."/>
+                <TextBlock Text="INSERT TRIP TO START" Style="{StaticResource Text.Pixel}" FontSize="10" Margin="0,36,0,0"
+                           Foreground="{StaticResource Brush.Gold}"/>
+            </StackPanel>
+
+            <!-- Scenery along the bottom -->
+            <Grid Height="190" VerticalAlignment="Bottom">
+                <Image Source="{StaticResource Sprite.Cloud}" Width="80" Height="36" HorizontalAlignment="Left"
+                       VerticalAlignment="Top" Margin="90,0,0,0" RenderOptions.EdgeMode="Aliased"/>
+                <Image Source="{StaticResource Sprite.Cloud}" Width="60" Height="27" HorizontalAlignment="Right"
+                       VerticalAlignment="Top" Margin="0,24,120,0" RenderOptions.EdgeMode="Aliased"/>
+                <Rectangle Height="72" VerticalAlignment="Bottom" Margin="0,0,0,34">
+                    <Rectangle.Fill>
+                        <ImageBrush ImageSource="{StaticResource Sprite.Skyline}" TileMode="Tile" Stretch="Fill"
+                                    Viewport="0,0,192,72" ViewportUnits="Absolute" AlignmentX="Left"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Rectangle Height="34" VerticalAlignment="Bottom" Fill="{StaticResource Brush.GameDeep}"/>
+                <Rectangle Height="4" VerticalAlignment="Bottom" Margin="0,0,0,14">
+                    <Rectangle.Fill>
+                        <DrawingBrush TileMode="Tile" Viewport="0,0,32,4" ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <GeometryDrawing Brush="Transparent" Geometry="M0,0 H32 V4 H0 Z"/>
+                                    <GeometryDrawing Brush="#73F8D5B9" Geometry="M0,0 H16 V4 H0 Z"/>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Image Source="{StaticResource Sprite.Tree}" Width="40" Height="44" HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom" Margin="40,0,0,34" RenderOptions.EdgeMode="Aliased"/>
+                <Image Source="{StaticResource Sprite.Tree}" Width="40" Height="44" HorizontalAlignment="Right"
+                       VerticalAlignment="Bottom" Margin="0,0,60,34" RenderOptions.EdgeMode="Aliased"/>
+                <Image Source="{StaticResource Sprite.Bike}" Width="88" Height="48" HorizontalAlignment="Left"
+                       VerticalAlignment="Bottom" Margin="220,0,0,22" RenderOptions.EdgeMode="Aliased"/>
+            </Grid>
+        </Grid>
+
+        <!-- Forms -->
+        <Border Grid.Column="1" Style="{StaticResource Card}" Width="400" Padding="36,40" VerticalAlignment="Center">
             <Grid>
                 <!-- Login screen -->
                 <StackPanel x:Name="LoginPanel">
-                    <TextBlock Text="Carbon Kickers"
-                               FontSize="26"
-                               FontWeight="Bold"
-                               Foreground="#094A44"
-                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="LOG IN" Style="{StaticResource Text.ScreenTitle}"/>
+                    <TextBlock Text="Welcome back. Your season is waiting." Style="{StaticResource Text.Subtitle}"
+                               Margin="0,10,0,28"/>
 
-                    <TextBlock Text="Welcome back!"
-                               Margin="0,12,0,24"
-                               FontSize="16"
-                               Foreground="#45726D"
-                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Email address" Style="{StaticResource Text.Label}"/>
+                    <TextBox x:Name="LoginEmailTextBox" Margin="0,0,0,16"/>
 
-                    <TextBlock Text="Email Address"/>
-                    <TextBox x:Name="LoginEmailTextBox"
-                             Height="32"
-                             Margin="0,6,0,16"/>
+                    <TextBlock Text="Password" Style="{StaticResource Text.Label}"/>
+                    <PasswordBox x:Name="LoginPasswordBox" Margin="0,0,0,20"/>
 
-                    <TextBlock Text="Password"/>
-                    <PasswordBox x:Name="LoginPasswordBox"
-                                 Height="32"
-                                 Margin="0,6,0,20"/>
+                    <TextBlock x:Name="LoginErrorText" Style="{StaticResource Text.Error}" Visibility="Collapsed"
+                               Margin="0,0,0,14"/>
 
-                    <TextBlock x:Name="LoginErrorText"
-                               Foreground="Crimson"
-                               TextWrapping="Wrap"
-                               Visibility="Collapsed"
-                               Margin="0,0,0,12"/>
+                    <Button Content="LOG IN" Click="LoginButton_Click" IsDefault="True"
+                            Style="{StaticResource Button.Game}" HorizontalAlignment="Stretch"/>
 
-                    <Button Content="Log In"
-                            Click="LoginButton_Click"
-                            Height="38"
-                            Background="#45726D"
-                            Foreground="White"/>
-
-                    <Button Content="Don't have an account? Sign up"
-                            Click="ShowRegisterButton_Click"
-                            Margin="0,16,0,0"
-                            Background="Transparent"
-                            Foreground="#45726D"
-                            BorderThickness="0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">
+                        <TextBlock Text="New here?" Style="{StaticResource Text.Muted}" Margin="0,0,6,0"/>
+                        <Button Content="Create an account" Click="ShowRegisterButton_Click" Style="{StaticResource Button.Link}"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Register screen -->
-                <StackPanel x:Name="RegisterPanel"
-                            Visibility="Collapsed">
-                    <TextBlock Text="Create an Account"
-                               FontSize="26"
-                               FontWeight="Bold"
-                               Foreground="#094A44"
-                               HorizontalAlignment="Center"/>
+                <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
+                    <TextBlock Text="SIGN UP" Style="{StaticResource Text.ScreenTitle}"/>
+                    <TextBlock Text="Start kicking carbon." Style="{StaticResource Text.Subtitle}" Margin="0,10,0,28"/>
 
-                    <TextBlock Text="Start kicking carbon."
-                               Margin="0,12,0,24"
-                               FontSize="16"
-                               Foreground="#45726D"
-                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Username" Style="{StaticResource Text.Label}"/>
+                    <TextBox x:Name="RegisterUsernameTextBox" Margin="0,0,0,4"/>
+                    <TextBlock Text="3 to 50 characters. Other players see this." Style="{StaticResource Text.Muted}"
+                               FontSize="12" Margin="0,0,0,14"/>
 
-                    <TextBlock Text="Username"/>
-                    <TextBox x:Name="RegisterUsernameTextBox"
-                             Height="32"
-                             Margin="0,6,0,12"/>
+                    <TextBlock Text="Email address" Style="{StaticResource Text.Label}"/>
+                    <TextBox x:Name="RegisterEmailTextBox" Margin="0,0,0,14"/>
 
-                    <TextBlock Text="Email Address"/>
-                    <TextBox x:Name="RegisterEmailTextBox"
-                             Height="32"
-                             Margin="0,6,0,12"/>
+                    <TextBlock Text="Password" Style="{StaticResource Text.Label}"/>
+                    <PasswordBox x:Name="RegisterPasswordBox" Margin="0,0,0,4"/>
+                    <TextBlock Text="At least 8 characters." Style="{StaticResource Text.Muted}" FontSize="12"
+                               Margin="0,0,0,20"/>
 
-                    <TextBlock Text="Password"/>
-                    <PasswordBox x:Name="RegisterPasswordBox"
-                                 Height="32"
-                                 Margin="0,6,0,20"/>
+                    <TextBlock x:Name="RegisterErrorText" Style="{StaticResource Text.Error}" Visibility="Collapsed"
+                               Margin="0,0,0,14"/>
 
-                    <TextBlock x:Name="RegisterErrorText"
-                               Foreground="Crimson"
-                               TextWrapping="Wrap"
-                               Visibility="Collapsed"
-                               Margin="0,0,0,12"/>
+                    <Button Content="CREATE ACCOUNT" Click="RegisterButton_Click"
+                            Style="{StaticResource Button.Game}" HorizontalAlignment="Stretch"/>
 
-                    <Button Content="Create Account"
-                            Click="RegisterButton_Click"
-                            Height="38"
-                            Background="#F7AB9B"
-                            Foreground="White"/>
-
-                    <Button Content="Already have an account? Log in"
-                            Click="ShowLoginButton_Click"
-                            Margin="0,16,0,0"
-                            Background="Transparent"
-                            Foreground="#45726D"
-                            BorderThickness="0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,22,0,0">
+                        <TextBlock Text="Already playing?" Style="{StaticResource Text.Muted}" Margin="0,0,6,0"/>
+                        <Button Content="Log in" Click="ShowLoginButton_Click" Style="{StaticResource Button.Link}"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>
