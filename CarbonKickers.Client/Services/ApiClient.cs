@@ -36,11 +36,34 @@ public sealed class ApiClient
         return result;
     }
 
-    public async Task<bool> RegisterAsync(RegisterRequest request)
+    /// <summary>
+    /// Registers a new account. Returns null on success, or the reason the API rejected it.
+    /// </summary>
+    public async Task<string?> RegisterAsync(RegisterRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("api/auth/register", request);
 
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        return await ReadErrorMessageAsync(response)
+            ?? $"Registration failed (HTTP {(int)response.StatusCode}). Please try again.";
+    }
+
+    private static async Task<string?> ReadErrorMessageAsync(HttpResponseMessage response)
+    {
+        try
+        {
+            var error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+            return string.IsNullOrWhiteSpace(error?.Message) ? null : error.Message;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            // Body was empty or not JSON (e.g. an unhandled server error page).
+            return null;
+        }
     }
 
     public async Task<DashboardResponse> GetDashboardAsync()

@@ -92,13 +92,11 @@ public partial class LoginWindow : Window
                 RegisterPasswordBox.Password
             );
 
-            var succeeded = await _apiClient.RegisterAsync(request);
+            var error = await _apiClient.RegisterAsync(request);
 
-            if (!succeeded)
+            if (error is not null)
             {
-                ShowRegisterError(
-                    "Registration failed. Email or username may already be registered."
-                );
+                ShowRegisterError(error);
                 return;
             }
 
