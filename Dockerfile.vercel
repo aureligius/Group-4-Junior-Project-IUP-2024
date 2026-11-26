@@ -1,0 +1,28 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /src
+
+COPY CarbonKickers.Api/CarbonKickers.Api.csproj CarbonKickers.Api/
+COPY CarbonKickers.Application/CarbonKickers.Application.csproj CarbonKickers.Application/
+COPY CarbonKickers.Domain/CarbonKickers.Domain.csproj CarbonKickers.Domain/
+COPY CarbonKickers.Infrastructure/CarbonKickers.Infrastructure.csproj CarbonKickers.Infrastructure/
+COPY CarbonKickers.Shared/CarbonKickers.Shared.csproj CarbonKickers.Shared/
+
+RUN dotnet restore CarbonKickers.Api/CarbonKickers.Api.csproj
+
+COPY . .
+
+RUN dotnet publish CarbonKickers.Api/CarbonKickers.Api.csproj \
+    --configuration Release \
+    --output /app/publish \
+    --no-restore
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+CMD ["sh", "-c", "ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080} dotnet CarbonKickers.Api.dll"]

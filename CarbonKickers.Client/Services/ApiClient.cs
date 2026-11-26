@@ -24,7 +24,7 @@ public sealed class ApiClient
     {
         _httpClient = new HttpClient(new SessionExpiryHandler(this))
         {
-            BaseAddress = new Uri("https://localhost:7211/"),
+            BaseAddress = new Uri("http://localhost:5211/"),
             // HttpClient waits 100 s by default. Saving a trip makes two Google route calls
             // (15 s limit each on the API), so 30 s covers a slow save without a long freeze.
             Timeout = TimeSpan.FromSeconds(30),
