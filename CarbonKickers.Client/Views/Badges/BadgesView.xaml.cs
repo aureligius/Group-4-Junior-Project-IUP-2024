@@ -38,6 +38,10 @@ public partial class BadgesView : UserControl
         {
             ShowError("Unable to load your badges. Please log in again.");
         }
+        finally
+        {
+            LoadingText.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void ShowError(string message)

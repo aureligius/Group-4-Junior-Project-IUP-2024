@@ -452,6 +452,7 @@
                     </StackPanel>
                 </Border>
             </Grid>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

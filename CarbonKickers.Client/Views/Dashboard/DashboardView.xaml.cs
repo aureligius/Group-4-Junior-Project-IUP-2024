@@ -53,6 +53,9 @@ public partial class DashboardView : UserControl
             ShowWeek(dashboard.LastSevenDays);
 
             await LoadGamificationSummaryAsync(dashboard);
+            UpdateCompetePanel(dashboard.GreenXp);
+
+            DashboardBody.Visibility = Visibility.Visible;
         }
         catch (HttpRequestException)
         {
@@ -61,6 +64,10 @@ public partial class DashboardView : UserControl
         catch (Exception)
         {
             ShowError("Unable to load your dashboard. Please log in again.");
+        }
+        finally
+        {
+            LoadingText.Visibility = Visibility.Collapsed;
         }
 
         await LoadBadgesAsync();
