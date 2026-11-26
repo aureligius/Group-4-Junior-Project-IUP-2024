@@ -23,4 +23,6 @@ public sealed record AuthOperationResult(
 public sealed record LoginResponse(
     string Token,
     string Username,
-    string Email);
+    string Email,
+    string Role
+);

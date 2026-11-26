@@ -17,6 +17,7 @@ public sealed class TransportService
     {
         return await _context
             .TransportModes.AsNoTracking()
+            .Where(mode => mode.IsActive)
             .OrderBy(mode => mode.ModeName)
             .Select(mode => new TransportModeResponse(
                 mode.Id,

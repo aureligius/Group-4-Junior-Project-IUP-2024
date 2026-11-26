@@ -1,0 +1,358 @@
+<UserControl
+    x:Class="CarbonKickers.Client.Views.Admin.AdminView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="36,32,36,36">
+            <TextBlock Style="{StaticResource Text.ScreenTitle}" Text="ADMIN PANEL" />
+
+            <TextBlock Style="{StaticResource Text.Subtitle}" Text="Manage weekly leagues and monitor Carbon Kickers activity." />
+
+            <UniformGrid Margin="0,24,0,0" Columns="3">
+                <Border Margin="0,0,10,10" Style="{StaticResource GameInset}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Text="USERS" />
+                        <TextBlock
+                            x:Name="TotalUsersText"
+                            Margin="0,8,0,0"
+                            FontSize="24"
+                            Style="{StaticResource Text.Pixel}"
+                            Text="0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,10,10" Style="{StaticResource GameInset}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Text="TRIPS" />
+                        <TextBlock
+                            x:Name="TotalTripsText"
+                            Margin="0,8,0,0"
+                            FontSize="24"
+                            Style="{StaticResource Text.Pixel}"
+                            Text="0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,10,10" Style="{StaticResource GameInset}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Text="CO₂ SAVED" />
+                        <TextBlock
+                            x:Name="TotalCo2Text"
+                            Margin="0,8,0,0"
+                            FontSize="24"
+                            Style="{StaticResource Text.Pixel}"
+                            Text="0 kg" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,10,10" Style="{StaticResource GameInset}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Text="BADGES UNLOCKED" />
+                        <TextBlock
+                            x:Name="BadgesUnlockedText"
+                            Margin="0,8,0,0"
+                            FontSize="24"
+                            Style="{StaticResource Text.Pixel}"
+                            Text="0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,10,10" Style="{StaticResource GameInset}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Text="ACTIVE BATTLES" />
+                        <TextBlock
+                            x:Name="ActiveChallengesText"
+                            Margin="0,8,0,0"
+                            FontSize="24"
+                            Style="{StaticResource Text.Pixel}"
+                            Text="0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,10,10" Style="{StaticResource GameInset}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameMuted}" Text="ACTIVE LEAGUES" />
+                        <TextBlock
+                            x:Name="ActiveLeaguesText"
+                            Margin="0,8,0,0"
+                            FontSize="24"
+                            Style="{StaticResource Text.Pixel}"
+                            Text="0" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <ContentControl Margin="0,20,0,0" Style="{StaticResource ArcadePanel}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Text.GameHeading}" Text="WEEKLY LEAGUES" />
+
+                    <TextBlock
+                        Margin="0,12,0,18"
+                        Style="{StaticResource Text.GameMuted}"
+                        Text="Creates the Bronze, Silver, Gold, and Diamond leagues for the current Monday-to-Sunday period. Calling it again this week will not create duplicates."
+                        TextWrapping="Wrap" />
+
+                    <Button
+                        HorizontalAlignment="Left"
+                        Click="CreateWeeklyLeaguesButton_Click"
+                        Content="CREATE CURRENT WEEK'S LEAGUES"
+                        Style="{StaticResource Button.Game}" />
+
+                    <TextBlock
+                        x:Name="LeagueStatusText"
+                        Margin="0,12,0,0"
+                        Style="{StaticResource Text.GameMuted}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ContentControl>
+
+            <ContentControl Margin="0,20,0,0" Style="{StaticResource ArcadePanel}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameHeading}" Text="BADGE MANAGEMENT" />
+
+                        <TextBlock
+                            Margin="0,12,0,14"
+                            Style="{StaticResource Text.GameMuted}"
+                            Text="Select a badge to edit it, or create a new achievement." />
+
+                        <ListBox
+                            x:Name="BadgesListBox"
+                            MinHeight="180"
+                            DisplayMemberPath="Title"
+                            SelectionChanged="BadgesListBox_SelectionChanged" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Style="{StaticResource Text.GameHeading}" Text="BADGE DETAILS" />
+
+                        <TextBlock
+                            Margin="0,16,0,6"
+                            FontWeight="SemiBold"
+                            Text="Title" />
+                        <TextBox x:Name="BadgeTitleTextBox" />
+
+                        <TextBlock
+                            Margin="0,14,0,6"
+                            FontWeight="SemiBold"
+                            Text="Description" />
+                        <TextBox
+                            x:Name="BadgeDescriptionTextBox"
+                            MinHeight="64"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap" />
+
+                        <TextBlock
+                            Margin="0,14,0,6"
+                            FontWeight="SemiBold"
+                            Text="Required Green XP" />
+                        <TextBox x:Name="BadgeXpTextBox" />
+
+                        <TextBlock
+                            Margin="0,14,0,6"
+                            FontWeight="SemiBold"
+                            Text="Icon URL" />
+                        <TextBox x:Name="BadgeIconUrlTextBox" />
+
+                        <StackPanel Margin="0,18,0,0" Orientation="Horizontal">
+                            <Button
+                                Click="CreateBadgeButton_Click"
+                                Content="CREATE BADGE"
+                                Style="{StaticResource Button.GameSmall}" />
+
+                            <Button
+                                Margin="10,0,0,0"
+                                Click="UpdateBadgeButton_Click"
+                                Content="UPDATE SELECTED"
+                                Style="{StaticResource Button.GameGhostSmall}" />
+
+                            <Button
+                                Margin="10,0,0,0"
+                                Click="ClearBadgeButton_Click"
+                                Content="CLEAR"
+                                Style="{StaticResource Button.GameGhostSmall}" />
+                        </StackPanel>
+
+                        <TextBlock
+                            x:Name="BadgeStatusText"
+                            Margin="0,12,0,0"
+                            Style="{StaticResource Text.GameMuted}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </ContentControl>
+
+
+            <ContentControl Margin="0,20,0,0" Style="{StaticResource ArcadePanel}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameHeading}" Text="TRANSPORT MODE MANAGEMENT" />
+
+                        <TextBlock
+                            Margin="0,12,0,14"
+                            Style="{StaticResource Text.GameMuted}"
+                            Text="Inactive modes are hidden from users when logging a trip." />
+
+                        <ListBox
+                            x:Name="TransportModesListBox"
+                            MinHeight="180"
+                            DisplayMemberPath="Name"
+                            SelectionChanged="TransportModesListBox_SelectionChanged" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Style="{StaticResource Text.GameHeading}" Text="MODE DETAILS" />
+
+                        <TextBlock
+                            Margin="0,16,0,6"
+                            FontWeight="SemiBold"
+                            Text="Name" />
+                        <TextBox x:Name="ModeNameTextBox" />
+
+                        <TextBlock
+                            Margin="0,14,0,6"
+                            FontWeight="SemiBold"
+                            Text="Emission factor per km" />
+                        <TextBox x:Name="EmissionFactorTextBox" />
+
+                        <CheckBox
+                            x:Name="ModeIsActiveCheckBox"
+                            Margin="0,16,0,0"
+                            Content="Available to users"
+                            IsChecked="True" />
+
+                        <StackPanel Margin="0,18,0,0" Orientation="Horizontal">
+                            <Button
+                                Click="CreateModeButton_Click"
+                                Content="CREATE MODE"
+                                Style="{StaticResource Button.GameSmall}" />
+
+                            <Button
+                                Margin="10,0,0,0"
+                                Click="UpdateModeButton_Click"
+                                Content="UPDATE SELECTED"
+                                Style="{StaticResource Button.GameGhostSmall}" />
+
+                            <Button
+                                Margin="10,0,0,0"
+                                Click="ClearModeButton_Click"
+                                Content="CLEAR"
+                                Style="{StaticResource Button.GameGhostSmall}" />
+                        </StackPanel>
+
+                        <TextBlock
+                            x:Name="ModeStatusText"
+                            Margin="0,12,0,0"
+                            Style="{StaticResource Text.GameMuted}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </ContentControl>
+
+            <ContentControl Margin="0,20,0,0" Style="{StaticResource ArcadePanel}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.GameHeading}" Text="NEXT-WEEK LEAGUE RULES" />
+
+                        <TextBlock
+                            Margin="0,12,0,14"
+                            Style="{StaticResource Text.GameMuted}"
+                            Text="Changes affect newly created weekly leagues only. Current-week leagues stay unchanged."
+                            TextWrapping="Wrap" />
+
+                        <ListBox
+                            x:Name="LeagueRulesListBox"
+                            MinHeight="180"
+                            DisplayMemberPath="TierName"
+                            SelectionChanged="LeagueRulesListBox_SelectionChanged" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Style="{StaticResource Text.GameHeading}" Text="TIER RULE DETAILS" />
+
+                        <TextBlock
+                            Margin="0,16,0,6"
+                            FontWeight="SemiBold"
+                            Text="Tier name" />
+                        <TextBox x:Name="TierNameTextBox" />
+
+                        <TextBlock
+                            Margin="0,14,0,6"
+                            FontWeight="SemiBold"
+                            Text="Minimum XP" />
+                        <TextBox x:Name="TierMinXpTextBox" />
+
+                        <TextBlock
+                            Margin="0,14,0,6"
+                            FontWeight="SemiBold"
+                            Text="Maximum XP" />
+                        <TextBox x:Name="TierMaxXpTextBox" />
+
+                        <TextBlock
+                            Margin="0,6,0,0"
+                            Style="{StaticResource Text.GameMuted}"
+                            Text="Leave Maximum XP blank for the final unlimited tier."
+                            TextWrapping="Wrap" />
+
+                        <CheckBox
+                            x:Name="TierIsActiveCheckBox"
+                            Margin="0,16,0,0"
+                            Content="Active for future league creation"
+                            IsChecked="True" />
+
+                        <StackPanel Margin="0,18,0,0" Orientation="Horizontal">
+                            <Button
+                                Click="CreateLeagueRuleButton_Click"
+                                Content="CREATE TIER"
+                                Style="{StaticResource Button.GameSmall}" />
+
+                            <Button
+                                Margin="10,0,0,0"
+                                Click="UpdateLeagueRuleButton_Click"
+                                Content="UPDATE SELECTED"
+                                Style="{StaticResource Button.GameGhostSmall}" />
+
+                            <Button
+                                Margin="10,0,0,0"
+                                Click="ClearLeagueRuleButton_Click"
+                                Content="CLEAR"
+                                Style="{StaticResource Button.GameGhostSmall}" />
+                        </StackPanel>
+
+                        <TextBlock
+                            x:Name="LeagueRuleStatusText"
+                            Margin="0,12,0,0"
+                            Style="{StaticResource Text.GameMuted}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </ContentControl>
+
+
+            <TextBlock
+                x:Name="ErrorText"
+                Margin="0,16,0,0"
+                Style="{StaticResource Text.Error}"
+                Visibility="Collapsed" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

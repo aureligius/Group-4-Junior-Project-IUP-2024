@@ -17,7 +17,7 @@ namespace CarbonKickers.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -150,6 +150,71 @@ namespace CarbonKickers.Infrastructure.Migrations
                     b.ToTable("LeagueParticipants");
                 });
 
+            modelBuilder.Entity("CarbonKickers.Domain.Entities.LeagueTierRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int?>("MaxXp")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinXp")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TierName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TierName")
+                        .IsUnique();
+
+                    b.ToTable("LeagueTierRules");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            MaxXp = 99,
+                            MinXp = 0,
+                            TierName = "Bronze"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsActive = true,
+                            MaxXp = 299,
+                            MinXp = 100,
+                            TierName = "Silver"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsActive = true,
+                            MaxXp = 699,
+                            MinXp = 300,
+                            TierName = "Gold"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsActive = true,
+                            MinXp = 700,
+                            TierName = "Diamond"
+                        });
+                });
+
             modelBuilder.Entity("CarbonKickers.Domain.Entities.TransportMode", b =>
                 {
                     b.Property<int>("Id")
@@ -160,6 +225,11 @@ namespace CarbonKickers.Infrastructure.Migrations
 
                     b.Property<double>("EmissionFactorPerKm")
                         .HasColumnType("double precision");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("ModeName")
                         .IsRequired()

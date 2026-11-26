@@ -3,6 +3,7 @@ using CarbonKickers.Shared.Contracts;
 
 namespace CarbonKickers.Client.Views.Shell;
 
+
 public enum Screen
 {
     Dashboard,
@@ -12,6 +13,7 @@ public enum Screen
     Leaderboard,
     League,
     Arena,
+    Admin,
 }
 
 // What every screen inside the main window can ask of it

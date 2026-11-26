@@ -82,7 +82,7 @@ public partial class LoginWindow : Window
                 return;
             }
 
-            var mainWindow = new MainWindow(_apiClient);
+           var mainWindow = new MainWindow(_apiClient, result);
             mainWindow.Show();
 
             Close();

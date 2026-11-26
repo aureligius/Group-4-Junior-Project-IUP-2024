@@ -1,6 +1,10 @@
 using System.Text;
+using CarbonKickers.Application.Admin;
 using CarbonKickers.Application.Badges;
+using CarbonKickers.Application.Challenges;
 using CarbonKickers.Application.Dashboard;
+using CarbonKickers.Application.Leaderboard;
+using CarbonKickers.Application.Leagues;
 using CarbonKickers.Application.Locations;
 using CarbonKickers.Application.Trips;
 using CarbonKickers.Application.Users;
@@ -50,6 +54,12 @@ builder.Services.AddScoped<IBadgeService, BadgeService>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ITripHistoryService, TripHistoryService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<ILeagueService, LeagueService>();
+builder.Services.AddScoped<IChallengeService, ChallengeService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IUserAuthService, UserAuthService>();
+builder.Services.AddScoped<IUserSearchService, UserSearchService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
